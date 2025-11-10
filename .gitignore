@@ -1,0 +1,57 @@
+# Backend - Maven/Java
+target/
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE - IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+
+
+# IDE - VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Frontend environment files (use .template.ts files instead)
+frontend/src/environments/environment.ts
+frontend/src/environments/environment.prod.ts
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.swp
+*~
+
+# Frontend - Angular/Node
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# Build artifacts
+*.class
+*.jar
+*.war
+*.ear
