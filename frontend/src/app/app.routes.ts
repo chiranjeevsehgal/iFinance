@@ -32,6 +32,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'expenses',
+    loadComponent: () => import('./features/expenses/expense.component').then(m => m.ExpenseComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'expenses/new',
+    loadComponent: () => import('./features/expenses/expense-form.component').then(m => m.ExpenseFormComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'expenses/edit/:id',
+    loadComponent: () => import('./features/expenses/expense-form.component').then(m => m.ExpenseFormComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/dashboard'
   }

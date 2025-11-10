@@ -59,12 +59,14 @@ import { User } from '../../core/models/user.model';
               <p class="text-sm text-gray-600">Track your daily commute expenses</p>
             </button>
             
-            <div class="glass-card p-6 opacity-50 text-center">
+            <button 
+              (click)="navigateTo('/expenses')"
+              class="glass-card p-6 hover:scale-105 transition-transform cursor-pointer text-center"
+            >
               <div class="text-4xl mb-3">💰</div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">Expenses</h3>
               <p class="text-sm text-gray-600">Manage miscellaneous expenses</p>
-              <p class="text-xs text-gray-500 mt-2">Coming soon...</p>
-            </div>
+            </button>
             
             <div class="glass-card p-6 opacity-50 text-center">
               <div class="text-4xl mb-3">💳</div>
@@ -75,8 +77,8 @@ import { User } from '../../core/models/user.model';
           </div>
 
           <div class="mt-8 text-sm text-gray-500">
-            <p>Phase 2 (Travel Records) completed! 🚀</p>
-            <p class="mt-2">Ready to implement expense tracking features...</p>
+            <p>Phase 3 (Expenses) completed! 🚀</p>
+            <p class="mt-2">Next: Credit card tracking features...</p>
           </div>
         </div>
       </main>

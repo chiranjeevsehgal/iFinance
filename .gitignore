@@ -1,3 +1,6 @@
+# DOCS
+STATE.md
+
 # Backend - Maven/Java
 target/
 !.mvn/wrapper/maven-wrapper.jar
