@@ -32,28 +32,28 @@ Phase 8: Deployment (Week 16-17)
 ### Google OAuth2 Prerequisites
 
 #### 1.0 Google Cloud Setup
-- [ ] Create Google Cloud Platform project
+- [x] Create Google Cloud Platform project
   - Go to: https://console.cloud.google.com/
   - Create new project: "iFinance"
-- [ ] Enable Google+ API (for user info)
-- [ ] Create OAuth2 credentials
+- [x] Enable Google+ API (for user info)
+- [x] Create OAuth2 credentials
   - Go to: APIs & Services → Credentials
   - Create OAuth 2.0 Client ID (Web application)
   - Set Authorized JavaScript origins: `http://localhost:4200`, `http://localhost:8080`
   - Set Authorized redirect URIs: `http://localhost:8080/login/oauth2/code/google`
   - Save Client ID and Client Secret
-- [ ] Store credentials securely (environment variables)
+- [x] Store credentials securely (environment variables)
 
 ### Backend Tasks
 
 #### 1.1 Project Initialization
-- [ ] Create Spring Boot 3.x project with Maven
+- [x] Create Spring Boot 3.x project with Maven
   - Dependencies: Spring Web, Spring Data MongoDB, **Spring Security**, **OAuth2 Client**, **Spring Session Data MongoDB**, Lombok, Validation, SpringDoc OpenAPI
-- [ ] Set up MongoDB Atlas cluster
+- [x] Set up MongoDB Atlas cluster
   - Create database: `ifinance`
   - Collections: `users`, `sessions`, `travel_records`, `misc_expenses`, `credit_card_transactions`
   - Get connection string
-- [ ] Configure `application.yml`
+- [x] Configure `application.yml`
   - MongoDB connection (use environment variable)
   - Server port: 8080
   - CORS configuration for `http://localhost:4200` with credentials enabled
@@ -77,7 +77,7 @@ Phase 8: Deployment (Week 16-17)
   - Create `.env` file or set environment variables for secrets
 
 #### 1.2 Project Structure
-- [ ] Create package structure:
+- [x] Create package structure:
   ```
   com.ifinance/
   ├── config/
@@ -92,69 +92,69 @@ Phase 8: Deployment (Week 16-17)
   ├── exception/
   └── util/
   ```
-- [ ] Create base configuration classes:
-  - [ ] `MongoConfig.java` - MongoDB configuration
-  - [ ] `CorsConfig.java` - CORS settings with credentials support
-  - [ ] **`SecurityConfig.java` - Spring Security with OAuth2 login**
-  - [ ] `OpenApiConfig.java` - Swagger documentation with security schemes
+- [x] Create base configuration classes:
+  - [x] `MongoConfig.java` - MongoDB configuration
+  - [x] `CorsConfig.java` - CORS settings with credentials support
+  - [x] **`SecurityConfig.java` - Spring Security with OAuth2 login**
+  - [x] `OpenApiConfig.java` - Swagger documentation with security schemes
 
 #### 1.3 User Management (NEW)
-- [ ] Create User document and repository:
-  - [ ] `User.java` - User document with @Document annotation
+- [x] Create User document and repository:
+  - [x] `User.java` - User document with @Document annotation
     - Fields: id, googleId (unique), email (unique), name, profilePicture, createdAt, lastLogin, updatedAt
     - Indexes: googleId, email
-  - [ ] `UserRepository.java` - Extends MongoRepository
+  - [x] `UserRepository.java` - Extends MongoRepository
     - Methods: findByGoogleId, findByEmail
-  - [ ] `UserService.java` - User business logic
+  - [x] `UserService.java` - User business logic
     - createOrUpdateUser(OAuth2User) - Called on login
     - getUserProfile(userId)
     - updateUserProfile(userId, updates)
-  - [ ] `UserDto.java` - User data transfer object
+  - [x] `UserDto.java` - User data transfer object
 
 #### 1.4 OAuth2 Security Implementation (NEW)
-- [ ] Create security components:
-  - [ ] `SecurityConfig.java`
+- [x] Create security components:
+  - [x] `SecurityConfig.java`
     - Configure OAuth2 login
     - Define security filter chain
     - Authorize `/`, `/login`, `/oauth2/**` as public
     - Require authentication for `/api/**`
     - Configure CSRF protection
     - Configure session management
-  - [ ] `OAuth2LoginSuccessHandler.java`
+  - [x] `OAuth2LoginSuccessHandler.java`
     - Handle successful OAuth2 login
     - Create or update user in database
     - Update lastLogin timestamp
-  - [ ] `OAuth2UserService.java`
+  - [x] `OAuth2UserService.java`
     - Load user from OAuth2 provider (Google)
     - Extract email, name, profile picture
     - Create/update User document
-  - [ ] `CustomUserPrincipal.java` (optional)
+  - [x] `CustomUserPrincipal.java` (optional)
     - Custom principal with user details
-  - [ ] `SecurityUtil.java` - Utility class
+  - [x] `SecurityUtil.java` - Utility class
     - getCurrentUserId() - Get authenticated user ID from SecurityContext
     - getCurrentUser() - Get full User object
 
 #### 1.5 Authentication Controllers (NEW)
-- [ ] Create authentication endpoints:
-  - [ ] `AuthController.java`
+- [x] Create authentication endpoints:
+  - [x] `AuthController.java`
     - `POST /api/auth/logout` - Logout and invalidate session
-  - [ ] `UserController.java`
+  - [x] `UserController.java`
     - `GET /api/user/me` - Get current user profile
     - `PUT /api/user/me` - Update user profile
 
 #### 1.6 Exception Handling
-- [ ] Create custom exceptions:
-  - [ ] `ResourceNotFoundException.java`
-  - [ ] `ValidationException.java`
-  - [ ] **`UnauthorizedException.java` (NEW)**
-- [ ] Create `GlobalExceptionHandler.java` with @RestControllerAdvice
-- [ ] Implement error response format
-- [ ] Add OAuth2 authentication error handling
+- [x] Create custom exceptions:
+  - [x] `ResourceNotFoundException.java`
+  - [x] `ValidationException.java`
+  - [x] **`UnauthorizedException.java` (NEW)**
+- [x] Create `GlobalExceptionHandler.java` with @RestControllerAdvice
+- [x] Implement error response format
+- [x] Add OAuth2 authentication error handling
 
 #### 1.7 Utilities
-- [ ] Create `DateUtil.java` for date operations
-- [ ] Create `ValidationUtil.java` for custom validations
-- [ ] **Create `SecurityUtil.java` for getting current user (NEW)**
+- [x] Create `DateUtil.java` for date operations
+- [x] Create `ValidationUtil.java` for custom validations
+- [x] **Create `SecurityUtil.java` for getting current user (NEW)**
 
 #### 1.8 Testing Setup
 - [ ] Set up JUnit 5 dependencies
@@ -165,18 +165,18 @@ Phase 8: Deployment (Week 16-17)
 ### Frontend Tasks
 
 #### 1.9 Project Initialization
-- [ ] Create Angular 20 project
+- [x] Create Angular 20 project
   - Enable routing
   - Choose CSS (will use Tailwind)
-- [ ] Install Node 22 dependencies
-- [ ] Install Tailwind CSS
+- [x] Install Node 22 dependencies
+- [x] Install Tailwind CSS
   ```bash
   npm install -D tailwindcss postcss autoprefixer
   npx tailwindcss init
   ```
 
 #### 1.10 Tailwind Configuration
-- [ ] Configure `tailwind.config.js` with glass theme customizations:
+- [x] Configure `tailwind.config.js` with glass theme customizations:
   ```javascript
   module.exports = {
     theme: {
@@ -191,11 +191,11 @@ Phase 8: Deployment (Week 16-17)
     },
   }
   ```
-- [ ] Add Tailwind directives to `styles.css`
+- [x] Add Tailwind directives to `styles.css`
 - [ ] Install Tailwind Forms plugin
 
 #### 1.11 Project Structure
-- [ ] Create folder structure:
+- [x] Create folder structure:
   ```
   src/app/
   ├── core/
@@ -223,48 +223,48 @@ Phase 8: Deployment (Week 16-17)
   ```
 
 #### 1.12 Authentication Implementation (NEW)
-- [ ] Create User model:
-  - [ ] `user.model.ts` - TypeScript interface for User
+- [x] Create User model:
+  - [x] `user.model.ts` - TypeScript interface for User
     - Fields: id, googleId, email, name, profilePicture, createdAt, lastLogin
-- [ ] Create authentication service:
-  - [ ] `AuthService` - Authentication state management
+- [x] Create authentication service:
+  - [x] `AuthService` - Authentication state management
     - isAuthenticated(): Observable<boolean>
     - login() - Redirect to Google OAuth
     - logout() - Call backend logout endpoint
     - getCurrentUser(): Observable<User>
-  - [ ] `UserService` - User profile operations
+  - [x] `UserService` - User profile operations
     - getUserProfile()
     - updateUserProfile(updates)
-- [ ] Create auth guard:
-  - [ ] `AuthGuard` - Protect routes
+- [x] Create auth guard:
+  - [x] `AuthGuard` - Protect routes
     - Check if user is authenticated
     - Redirect to login if not authenticated
-- [ ] Create interceptors:
-  - [ ] `CredentialsInterceptor` (NEW) - Add credentials to requests
+- [x] Create interceptors:
+  - [x] `CredentialsInterceptor` (NEW) - Add credentials to requests
     - withCredentials: true for session cookies
-- [ ] Create login page:
-  - [ ] `LoginComponent`
+- [x] Create login page:
+  - [x] `LoginComponent`
     - Display "Sign in with Google" button
     - Glass-themed design
     - Redirect to `/oauth2/authorization/google` on click
 
 #### 1.13 Core Setup
-- [ ] Create environment files:
-  - [ ] `environment.ts` (development)
-  - [ ] `environment.prod.ts` (production)
+- [x] Create environment files:
+  - [x] `environment.ts` (development)
+  - [x] `environment.prod.ts` (production)
   - Configure API URL, **auth URL**, date format, currency
-- [ ] Create base services:
-  - [ ] `ApiService` - Base HTTP service with credentials
-- [ ] Create HTTP interceptors:
-  - [ ] **`CredentialsInterceptor` - Include credentials (NEW)**
-  - [ ] `HttpErrorInterceptor` - Error handling (including 401 Unauthorized)
+- [x] Create base services:
+  - [x] `ApiService` - Base HTTP service with credentials
+- [x] Create HTTP interceptors:
+  - [x] **`CredentialsInterceptor` - Include credentials (NEW)**
+  - [x] `HttpErrorInterceptor` - Error handling (including 401 Unauthorized)
   - [ ] `LoadingInterceptor` - Loading state
-- [ ] Configure routing in `app.routes.ts`
+- [x] Configure routing in `app.routes.ts`
   - **Add public routes: `/login`**
   - **Protect all feature routes with AuthGuard (NEW)**
 
 #### 1.14 Layout Components
-- [ ] Create `HeaderComponent` with glass styling
+- [x] Create `HeaderComponent` with glass styling
   - App logo/title
   - Navigation links
   - **User profile display (name, profile picture) (NEW)**
@@ -291,19 +291,19 @@ Phase 8: Deployment (Week 16-17)
 - [ ] **Create mock authentication for tests (NEW)**
 
 ### Deliverables ✅
-- [ ] Running Spring Boot application (http://localhost:8080)
-- [ ] **Google OAuth2 authentication working end-to-end (NEW)**
-- [ ] **User registration and login functional (NEW)**
-- [ ] Connected to MongoDB Atlas (users and sessions collections)
-- [ ] Swagger UI accessible with security (http://localhost:8080/swagger-ui.html)
-- [ ] Angular app running (http://localhost:4200)
-- [ ] **Login page with "Sign in with Google" working (NEW)**
-- [ ] **Protected routes with AuthGuard (NEW)**
-- [ ] **User profile display in header (NEW)**
-- [ ] Glass-themed layout visible
+- [x] Running Spring Boot application (http://localhost:8080)
+- [x] **Google OAuth2 authentication working end-to-end (NEW)**
+- [x] **User registration and login functional (NEW)**
+- [x] Connected to MongoDB Atlas (users and sessions collections)
+- [x] Swagger UI accessible with security (http://localhost:8080/swagger-ui.html)
+- [x] Angular app running (http://localhost:4200)
+- [x] **Login page with "Sign in with Google" working (NEW)**
+- [x] **Protected routes with AuthGuard (NEW)**
+- [x] **User profile display in header (NEW)**
+- [x] Glass-themed layout visible
 - [ ] Navigation working between placeholder pages
-- [ ] CORS configured with credentials support
-- [ ] **Session management working (NEW)**
+- [x] CORS configured with credentials support
+- [x] **Session management working (NEW)**
 
 ---
 
@@ -1387,7 +1387,7 @@ Phase 8: Deployment (Week 16-17)
 
 | Phase | Status | Completion % | Notes |
 |-------|--------|--------------|-------|
-| Phase 1: Foundation | 🟡 Not Started | 0% | - |
+| Phase 1: Foundation | � In Progress | 95% | Core complete, optional components remain |
 | Phase 2: Travel | 🟡 Not Started | 0% | - |
 | Phase 3: Expenses | 🟡 Not Started | 0% | - |
 | Phase 4: Credit Card | 🟡 Not Started | 0% | - |

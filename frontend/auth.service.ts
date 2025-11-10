@@ -34,13 +34,11 @@ export class AuthService {
   /**
    * Logout user
    */
-  logout(): Observable<void> {
+  logout(): void {
     // Clear user from service
     this.userService.clearCurrentUser();
     
-    // Redirect to backend logout endpoint which will clear session
+    // Redirect to backend logout endpoint which will clear session and redirect to login
     window.location.href = `${environment.authUrl}/logout`;
-    
-    return of(undefined);
   }
 }
