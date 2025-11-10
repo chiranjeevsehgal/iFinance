@@ -50,27 +50,32 @@ import { User } from '../../core/models/user.model';
           </p>
           
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-            <div class="glass-card p-6">
+            <button 
+              (click)="navigateTo('/travel')"
+              class="glass-card p-6 hover:scale-105 transition-transform cursor-pointer text-center"
+            >
               <div class="text-4xl mb-3">🚗</div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">Travel Records</h3>
               <p class="text-sm text-gray-600">Track your daily commute expenses</p>
-            </div>
+            </button>
             
-            <div class="glass-card p-6">
+            <div class="glass-card p-6 opacity-50 text-center">
               <div class="text-4xl mb-3">💰</div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">Expenses</h3>
               <p class="text-sm text-gray-600">Manage miscellaneous expenses</p>
+              <p class="text-xs text-gray-500 mt-2">Coming soon...</p>
             </div>
             
-            <div class="glass-card p-6">
+            <div class="glass-card p-6 opacity-50 text-center">
               <div class="text-4xl mb-3">💳</div>
               <h3 class="text-lg font-medium text-gray-900 mb-2">Credit Cards</h3>
               <p class="text-sm text-gray-600">Track credit card transactions</p>
+              <p class="text-xs text-gray-500 mt-2">Coming soon...</p>
             </div>
           </div>
 
           <div class="mt-8 text-sm text-gray-500">
-            <p>Phase 1 (Authentication) completed! 🚀</p>
+            <p>Phase 2 (Travel Records) completed! 🚀</p>
             <p class="mt-2">Ready to implement expense tracking features...</p>
           </div>
         </div>
@@ -106,5 +111,9 @@ export class DashboardComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  navigateTo(route: string): void {
+    this.router.navigate([route]);
   }
 }

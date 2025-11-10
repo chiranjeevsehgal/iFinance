@@ -17,6 +17,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'travel',
+    loadComponent: () => import('./features/travel/travel.component').then(m => m.TravelComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'travel/new',
+    loadComponent: () => import('./features/travel/travel-form.component').then(m => m.TravelFormComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'travel/edit/:id',
+    loadComponent: () => import('./features/travel/travel-form.component').then(m => m.TravelFormComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/dashboard'
   }
