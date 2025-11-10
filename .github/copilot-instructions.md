@@ -12,7 +12,9 @@ A personal finance management web application built with Spring Boot backend and
 - **Database**: MongoDB Atlas
 - **ODM**: Spring Data MongoDB
 - **API Style**: RESTful
-- **Security**: None (single-user application, no authentication required)
+- **Security**: Spring Security with OAuth2 (Google Sign-In)
+- **Authentication**: OAuth2 Google authentication
+- **Session Management**: HTTP sessions with MongoDB session store
 - **Validation**: Jakarta Bean Validation
 - **Documentation**: SpringDoc OpenAPI (Swagger)
 
@@ -31,13 +33,14 @@ A personal finance management web application built with Spring Boot backend and
 ### Backend Architecture
 ```
 src/main/java/com/ifinance/
-├── config/          # Configuration classes (MongoDB, CORS, etc.)
+├── config/          # Configuration classes (MongoDB, Security, CORS, etc.)
 ├── controller/      # REST controllers
 ├── service/         # Business logic layer
 ├── repository/      # Data access layer (MongoDB repositories)
 ├── model/           # Document classes
 │   ├── document/    # MongoDB documents
 │   └── dto/         # Data Transfer Objects
+├── security/        # Security configuration and OAuth2 handlers
 ├── exception/       # Custom exceptions and global exception handler
 └── util/            # Utility classes
 ```
@@ -70,7 +73,7 @@ src/app/
 
 **Backend Requirements**:
 - Document: `TravelRecord`
-  - Fields: id, date, timeOfDay (MORNING/EVENING), cost, createdAt, updatedAt
+  - Fields: id, userId, date, timeOfDay (MORNING/EVENING), cost, createdAt, updatedAt
   - Enum: `TimeOfDay` (MORNING, EVENING)
 - API Endpoints:
   - `POST /api/travel` - Create travel record
@@ -94,7 +97,7 @@ src/app/
 
 **Backend Requirements**:
 - Document: `MiscExpense`
-  - Fields: id, date, category, amount, description, paymentMethod, createdAt, updatedAt
+  - Fields: id, userId, date, category, amount, description, paymentMethod, createdAt, updatedAt
   - Enum: `ExpenseCategory` (FOOD, GROCERIES, ENTERTAINMENT, HEALTH, UTILITIES, SHOPPING, EDUCATION, OTHER)
   - Enum: `PaymentMethod` (CASH, UPI, DEBIT_CARD, NET_BANKING, OTHER)
 - API Endpoints:
@@ -120,7 +123,7 @@ src/app/
 
 **Backend Requirements**:
 - Document: `CreditCardTransaction`
-  - Fields: id, date, paymentTitle, amount, createdAt, updatedAt
+  - Fields: id, userId, date, paymentTitle, amount, createdAt, updatedAt
   - Note: No card management - simplified single collection for all credit card transactions
 - API Endpoints:
   - `POST /api/credit-card-transactions` - Add transaction
@@ -188,10 +191,24 @@ src/app/
 
 ### MongoDB Collections
 
+**User Collection**
+```json
+{
+  "_id": ObjectId,
+  "googleId": String,              // Google OAuth ID (unique)
+  "email": String,                 // Email from Google
+  "name": String,                  // Full name from Google
+  "profilePicture": String,        // Profile picture URL from Google
+  "createdAt": ISODate,
+  "lastLogin": ISODate
+}
+```
+
 **TravelRecord Collection**
 ```json
 {
   "_id": ObjectId,
+  "userId": ObjectId,              // Reference to User collection
   "date": ISODate,
   "timeOfDay": "MORNING|EVENING",
   "cost": Number,
@@ -204,6 +221,7 @@ src/app/
 ```json
 {
   "_id": ObjectId,
+  "userId": ObjectId,              // Reference to User collection
   "date": ISODate,
   "category": "FOOD|GROCERIES|ENTERTAINMENT|...",
   "amount": Number,
@@ -218,6 +236,7 @@ src/app/
 ```json
 {
   "_id": ObjectId,
+  "userId": ObjectId,              // Reference to User collection
   "date": ISODate,
   "paymentTitle": String,
   "amount": Number,
@@ -227,9 +246,11 @@ src/app/
 ```
 
 ### Indexes
-- Create indexes on: date fields (for all collections)
-- Text index on paymentTitle for credit card transactions (for search)
-- Compound index on (date, timeOfDay) for travel records
+- **User collection**: `{ googleId: 1 }` (unique), `{ email: 1 }` (unique)
+- **All data collections**: Compound index `{ userId: 1, date: -1 }` for user-specific queries
+- **TravelRecord**: `{ userId: 1, date: 1, timeOfDay: 1 }`
+- **MiscExpense**: `{ userId: 1, category: 1 }`
+- **CreditCardTransaction**: `{ userId: 1 }`, text index on `paymentTitle`
 
 ## API Design Principles
 
@@ -269,13 +290,46 @@ src/app/
 
 ## Security Requirements
 
-### No Authentication (Single-User Application)
-- This is a single-user local application with no authentication
-- All API endpoints are publicly accessible
-- No user management or login required
-- CORS should be configured to allow frontend origin (http://localhost:4200)
+### OAuth2 Authentication (Google Sign-In)
+- **Authentication Provider**: Google OAuth2
+- **Sign-In Method**: "Sign in with Google" button
+- **User Registration**: Automatic on first Google sign-in
+- **Session Management**: HTTP sessions stored in MongoDB
+- **Authorization**: Users can only access their own data
 
-**Note**: If multi-user support is needed in the future, JWT authentication can be added
+### Security Implementation
+- **Spring Security**: Configure OAuth2 client for Google
+- **Protected Endpoints**: All `/api/**` endpoints require authentication
+- **Public Endpoints**: `/`, `/login`, `/oauth2/**` (OAuth callback)
+- **Session Store**: MongoDB-based session persistence (spring-session-data-mongodb)
+- **CORS**: Configured for frontend origin (http://localhost:4200)
+- **User Isolation**: All queries filtered by authenticated user's ID
+
+### Google OAuth2 Configuration
+```yaml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+```
+
+### User Profile
+- Automatically created from Google account on first sign-in
+- Fields: googleId (unique), email, name, profilePicture
+- Profile picture displayed in header
+- User info endpoint: `GET /api/user/me`
+
+### Data Access Control
+- All data operations automatically filtered by logged-in user
+- Service layer methods accept authenticated user from SecurityContext
+- Repository queries include userId filter
+- No cross-user data access possible
 
 ## UI/UX Guidelines
 
@@ -391,6 +445,19 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb+srv://<username>:<password>@<cluster>.mongodb.net/ifinance?retryWrites=true&w=majority}
       database: ifinance
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: profile, email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+  session:
+    store-type: mongodb
+    mongodb:
+      collection-name: sessions
   
 server:
   port: 8080
@@ -398,15 +465,20 @@ server:
 # CORS configuration
 cors:
   allowed-origins: http://localhost:4200
+  allowed-credentials: true
 ```
 
-**Note**: Store MongoDB Atlas connection string in environment variable `MONGODB_URI`
+**Note**: Environment variables required:
+- `MONGODB_URI` - MongoDB Atlas connection string
+- `GOOGLE_CLIENT_ID` - Google OAuth2 Client ID
+- `GOOGLE_CLIENT_SECRET` - Google OAuth2 Client Secret
 
 ### Frontend (environment.ts)
 ```typescript
 export const environment = {
   production: false,
   apiUrl: 'http://localhost:8080/api',
+  authUrl: 'http://localhost:8080',
   dateFormat: 'yyyy-MM-dd',
   currency: '₹'
 };
@@ -464,8 +536,9 @@ export const environment = {
 - Data export/import
 - Mobile app
 - Receipt image upload
-- Expense sharing/splitting
+- Data sharing between users
 - Investment tracking
+- Admin dashboard
 
 ### Performance Optimization
 - Implement caching for frequently accessed data (Spring Cache)
