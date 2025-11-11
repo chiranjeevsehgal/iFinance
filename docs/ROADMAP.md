@@ -9,7 +9,7 @@ Phase 2: Travel Records (Week 4-5)
     ↓
 Phase 3: Expenses (Week 6-7)
     ↓
-Phase 4: Credit Card (Week 8-9)
+Phase 4: Investments & Savings (Week 8-9)
     ↓
 Phase 5: Dashboard (Week 10-11)
     ↓
@@ -51,7 +51,7 @@ Phase 8: Deployment (Week 16-17)
   - Dependencies: Spring Web, Spring Data MongoDB, **Spring Security**, **OAuth2 Client**, **Spring Session Data MongoDB**, Lombok, Validation, SpringDoc OpenAPI
 - [x] Set up MongoDB Atlas cluster
   - Create database: `ifinance`
-  - Collections: `users`, `sessions`, `travel_records`, `misc_expenses`, `credit_card_transactions`
+  - Collections: `users`, `sessions`, `travel_records`, `misc_expenses`, `investments`
   - Get connection string
 - [x] Configure `application.yml`
   - MongoDB connection (use environment variable)
@@ -214,7 +214,7 @@ Phase 8: Deployment (Week 16-17)
   │   ├── dashboard/
   │   ├── travel/
   │   ├── expenses/
-  │   ├── credit-card/
+  │   ├── investments/
   │   └── reports/
   └── layout/
       ├── header/
@@ -550,104 +550,118 @@ Phase 8: Deployment (Week 16-17)
 
 ---
 
-## Phase 4: Credit Card Transactions Feature 💳
+## Phase 4: Investments & Savings Feature �💰
 
 **Duration**: ~2 weeks  
-**Goal**: Simple credit card transaction tracking
+**Goal**: Track investments and savings across various categories
 
 ### Backend Tasks
 
 #### 4.1 Model Layer
-- [ ] Create `CreditCardTransaction` document class:
-  - [ ] Fields: id, date, paymentTitle, amount, createdAt, updatedAt
-  - [ ] Validation annotations
-  - [ ] Indexes: @Indexed on date, @TextIndexed on paymentTitle
-- [ ] Create `TransactionDto`
-- [ ] Create mapper methods
+- [x] Create `InvestmentCategory` enum:
+  - [x] Values: STOCKS, MUTUAL_FUNDS, FIXED_DEPOSIT, SAVINGS_ACCOUNT, GOLD, REAL_ESTATE, CRYPTO, OTHER
+  - [x] Display names and icons for each category
+- [x] Create `Investment` document class:
+  - [x] Fields: id, userId, date, category, amount, description, otherCategoryName, createdAt, updatedAt
+  - [x] Validation annotations
+  - [x] Indexes: Compound index on (userId, date), (userId, category)
+- [x] Create `InvestmentDto` with mapper methods
 
 #### 4.2 Repository Layer
-- [ ] Create `CreditCardRepository` interface
-- [ ] Add custom query methods:
-  - [ ] `findByDateBetween(LocalDate start, LocalDate end)`
-  - [ ] `searchByPaymentTitle(String keyword)` - Text search
+- [x] Create `InvestmentRepository` interface extending MongoRepository
+- [x] Add custom query methods:
+  - [x] `findByUserIdAndDateBetween()` - Date range filter
+  - [x] `findByUserIdAndCategory()` - Category filter
+  - [x] `findByUserIdAndDescriptionContaining()` - Search by description
 
 #### 4.3 Service Layer
-- [ ] Create `CreditCardService`:
-  - [ ] CRUD operations
-  - [ ] `searchTransactions(String keyword)`
-  - [ ] `getTransactionsByDateRange(LocalDate start, LocalDate end)`
-  - [ ] `getTransactionSummary(String period)`
+- [x] Create `InvestmentService`:
+  - [x] CRUD operations (create, getById, getAll, update, delete)
+  - [x] `getInvestmentsByCategory()` - Filter by category
+  - [x] `getInvestmentsByDateRange()` - Filter by date range
+  - [x] `searchInvestmentsByDescription()` - Text search
+  - [x] `getInvestmentSummary()` - Calculate totals by category
+  - [x] User isolation via SecurityUtil.getCurrentUserId()
 
 #### 4.4 Controller Layer
-- [ ] Create `CreditCardController` with endpoints:
-  - [ ] POST `/api/credit-card-transactions` - Create
-  - [ ] GET `/api/credit-card-transactions` - Get all (paginated)
-  - [ ] GET `/api/credit-card-transactions/{id}` - Get by ID
-  - [ ] PUT `/api/credit-card-transactions/{id}` - Update
-  - [ ] DELETE `/api/credit-card-transactions/{id}` - Delete
-  - [ ] GET `/api/credit-card-transactions/date/{date}` - By date
-  - [ ] GET `/api/credit-card-transactions/summary?period={period}` - Summary
-  - [ ] GET `/api/credit-card-transactions/search?q={keyword}` - Search
-- [ ] Add Swagger docs
+- [x] Create `InvestmentController` with endpoints:
+  - [x] POST `/api/investments` - Create investment
+  - [x] GET `/api/investments` - Get all (paginated)
+  - [x] GET `/api/investments/{id}` - Get by ID
+  - [x] PUT `/api/investments/{id}` - Update
+  - [x] DELETE `/api/investments/{id}` - Delete
+  - [x] GET `/api/investments/category/{category}` - Filter by category
+  - [x] GET `/api/investments/date-range?startDate={start}&endDate={end}` - Date range
+  - [x] GET `/api/investments/search?q={keyword}` - Search
+  - [x] GET `/api/investments/summary` - Category-wise summary
+- [x] Add Swagger docs
 
 #### 4.5 Testing
-- [ ] Unit tests
-- [ ] Integration tests
-- [ ] Test text search functionality
+- [x] Unit tests for service layer
+- [x] Integration tests for controller
+- [x] Test search and filtering functionality
 
 ### Frontend Tasks
 
 #### 4.6 Models & Services
-- [ ] Create `transaction.model.ts` interface
-- [ ] Create `CreditCardService`:
-  - [ ] CRUD operations
-  - [ ] Search method
-  - [ ] Summary calculation
+- [x] Create `investment.model.ts`:
+  - [x] Investment interface
+  - [x] InvestmentCategory enum
+  - [x] INVESTMENT_CATEGORY_CONFIG with labels, icons, colors
+- [x] Create `InvestmentService`:
+  - [x] CRUD operations
+  - [x] Search method
+  - [x] Category filtering
+  - [x] Summary calculation
 
-#### 4.7 Credit Card Module
-- [ ] Create `CreditCardModule` with routing
-- [ ] Routes: `/credit-card`, `/credit-card/new`, `/credit-card/edit/:id`
+#### 4.7 Investments Module
+- [x] Create routes for investments feature
+- [x] Routes: `/investments`, `/investments/new`, `/investments/edit/:id`
+- [x] Apply auth guards to all routes
 
 #### 4.8 Components
-- [ ] Create `TransactionListComponent`:
-  - [ ] Glass card container
-  - [ ] Table: Date, Payment Title, Amount, Actions
-  - [ ] Search bar for payment title (debounced)
-  - [ ] Date range filter
-  - [ ] Pagination
-  - [ ] Sort by date, amount
-  - [ ] Loading/empty states
-- [ ] Create `TransactionFormComponent`:
-  - [ ] Reactive form
-  - [ ] Date picker (default: today)
-  - [ ] Payment title input (text, max 100 chars)
-  - [ ] Amount input with ₹
-  - [ ] Submit/Cancel buttons
-  - [ ] Validation
-  - [ ] Glass-styled inputs
-- [ ] Create `TransactionSummaryComponent`:
-  - [ ] Total transactions
-  - [ ] Total amount
-  - [ ] Average transaction amount
-  - [ ] Period breakdown
+- [x] Create `InvestmentComponent` (List View):
+  - [x] Glass card container with gradient background
+  - [x] Table showing: Date, Category (with icon), Amount, Description, Actions
+  - [x] Search bar for description (debounced)
+  - [x] Category filter dropdown (with "All Categories" option)
+  - [x] Date range filter (start and end date pickers)
+  - [x] Total investments display (sum of filtered results)
+  - [x] Loading state with skeleton
+  - [x] Empty state message
+  - [x] Edit and Delete actions
+- [x] Create `InvestmentFormComponent`:
+  - [x] Reactive form with validation
+  - [x] Date picker (default: today)
+  - [x] Category dropdown with icons
+  - [x] Conditional "Other Category Name" field (shown when OTHER selected)
+  - [x] Amount input with ₹ symbol
+  - [x] Description textarea
+  - [x] Submit/Cancel buttons with glass styling
+  - [x] Form validation and error messages
+  - [x] Support for both create and edit modes
 
 #### 4.9 Styling
-- [ ] Apply glass theme
-- [ ] Responsive design
-- [ ] Search input with glass effect
+- [x] Apply glassmorphism theme throughout
+- [x] Category badges with distinct colors and icons
+- [x] Responsive design for mobile/tablet/desktop
+- [x] Smooth transitions and hover effects
+- [x] Glass-styled form inputs and buttons
 
 #### 4.10 Testing
-- [ ] Component tests
-- [ ] Service tests
-- [ ] Test search functionality
-- [ ] Manual testing
+- [x] Component unit tests
+- [x] Service unit tests
+- [x] Manual end-to-end testing
 
 ### Deliverables ✅
-- [ ] Complete credit card transaction CRUD
-- [ ] Search functionality working
-- [ ] Glass-themed UI
-- [ ] Summary calculations accurate
-- [ ] Tests passing
+- [x] Complete investments CRUD operations
+- [x] Category-based filtering working
+- [x] Search functionality by description
+- [x] Date range filtering
+- [x] Summary calculations accurate
+- [x] Glass-themed UI consistent with app design
+- [x] Tests passing
+- [x] Integration with dashboard complete
 
 ---
 
@@ -671,9 +685,9 @@ Phase 8: Deployment (Week 16-17)
 #### 5.2 Summary DTO
 - [ ] Create `SummaryDto` class:
   - [ ] period, startDate, endDate
-  - [ ] totalTravel, totalMiscExpenses, totalCreditCardExpenses, grandTotal
-  - [ ] travelCount, expenseCount, creditCardTransactionCount
-  - [ ] breakdown (Map of category totals, payment method totals)
+  - [ ] totalTravel, totalMiscExpenses, totalInvestments, grandTotal
+  - [ ] travelCount, expenseCount, investmentCount
+  - [ ] breakdown (Map of category totals, payment method totals, investment category totals)
 
 #### 5.3 Controller Layer
 - [ ] Create `ReportController`:
@@ -711,7 +725,7 @@ Phase 8: Deployment (Week 16-17)
   - [ ] Summary cards section:
     - [ ] Travel card (glass) - total, count, morning/evening split
     - [ ] Misc Expenses card (glass) - total, count
-    - [ ] Credit Card card (glass) - total, count
+    - [ ] Investments & Savings card (glass) - total, count
     - [ ] Grand Total card (glass, highlighted)
   - [ ] Recent transactions section:
     - [ ] Last 5-10 transactions across all types
@@ -735,7 +749,7 @@ Phase 8: Deployment (Week 16-17)
 #### 5.10 Recent Transactions Component
 - [ ] Create `RecentTransactionsComponent`:
   - [ ] List of latest transactions
-  - [ ] Type indicators (travel/expense/credit card)
+  - [ ] Type indicators (travel/expense/investment)
   - [ ] Click to navigate to detail view
   - [ ] Glass card list
 
@@ -813,7 +827,7 @@ Phase 8: Deployment (Week 16-17)
 - [ ] Create `DailyReportComponent`:
   - [ ] Date selector (default: today)
   - [ ] Summary section (glass card):
-    - Travel, Expenses, Credit Card totals
+    - Travel, Expenses, Investments totals
     - Transaction counts
     - Grand total
   - [ ] Donut chart: Category distribution
@@ -955,7 +969,7 @@ Phase 8: Deployment (Week 16-17)
 - [ ] Create MongoDB indexes:
   - [ ] TravelRecord: `{ date: 1, timeOfDay: 1 }`
   - [ ] MiscExpense: `{ date: 1 }`, `{ category: 1 }`
-  - [ ] CreditCardTransaction: `{ date: 1 }`, text index on `paymentTitle`
+  - [ ] Investment: `{ date: 1 }`, `{ category: 1 }`
 - [ ] Optimize aggregation queries
 - [ ] Add query result caching (Spring Cache)
 - [ ] Profile slow queries
@@ -1209,10 +1223,11 @@ Phase 8: Deployment (Week 16-17)
 - [ ] Tests passing
 
 ### Phase 4 Complete ✅
-- [ ] Credit card transactions feature functional
-- [ ] Search working
-- [ ] All CRUD operations working
-- [ ] Tests passing
+- [x] Investments & Savings feature functional
+- [x] Category-based tracking working
+- [x] All CRUD operations working
+- [x] Search and filtering working
+- [x] Tests passing
 
 ### Phase 5 Complete ✅
 - [ ] Dashboard showing comprehensive summary
@@ -1387,10 +1402,10 @@ Phase 8: Deployment (Week 16-17)
 
 | Phase | Status | Completion % | Notes |
 |-------|--------|--------------|-------|
-| Phase 1: Foundation | � In Progress | 95% | Core complete, optional components remain |
-| Phase 2: Travel | 🟡 Not Started | 0% | - |
-| Phase 3: Expenses | 🟡 Not Started | 0% | - |
-| Phase 4: Credit Card | 🟡 Not Started | 0% | - |
+| Phase 1: Foundation | 🟢 Complete | 100% | OAuth2 authentication and setup complete |
+| Phase 2: Travel | � Complete | 100% | Travel records feature complete |
+| Phase 3: Expenses | � Complete | 100% | Miscellaneous expenses feature complete |
+| Phase 4: Investments & Savings | � Complete | 100% | Investments tracking feature complete |
 | Phase 5: Dashboard | 🟡 Not Started | 0% | - |
 | Phase 6: Reports | 🟡 Not Started | 0% | - |
 | Phase 7: Polish | 🟡 Not Started | 0% | - |

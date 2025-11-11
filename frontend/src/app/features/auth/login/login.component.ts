@@ -17,7 +17,7 @@ import { AuthService } from '../../../../../auth.service';
         <div class="space-y-4">
           <button
             (click)="loginWithGoogle()"
-            class="w-full glass-button-primary py-3 px-6 rounded-lg font-medium text-gray-900 
+            class="w-full glass-button-primary text-white py-3 px-6 rounded-lg font-medium  
                    hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-3"
           >
             <svg class="w-5 h-5" viewBox="0 0 24 24">

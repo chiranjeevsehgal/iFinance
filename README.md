@@ -1,6 +1,6 @@
 # iFinance 💰
 
-> A modern personal finance management web application for tracking daily expenses, travel costs, and credit card transactions.
+> A modern personal finance management web application for tracking daily expenses, travel costs, and investments & savings.
 
 [![Java](https://img.shields.io/badge/Java-21-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-brightgreen.svg)](https://spring.io/projects/spring-boot)
@@ -12,7 +12,7 @@
 
 ## 🌟 Overview
 
-iFinance is a comprehensive personal finance management solution designed to help you track and manage your daily financial activities with ease. Built with modern technologies and featuring a beautiful glassmorphism UI, it offers a seamless experience for monitoring your expenses, travel costs, and credit card transactions.
+iFinance is a comprehensive personal finance management solution designed to help you track and manage your daily financial activities with ease. Built with modern technologies and featuring a beautiful glassmorphism UI, it offers a seamless experience for monitoring your expenses, travel costs, and investments & savings.
 
 ### ✨ Key Features
 
@@ -21,6 +21,7 @@ iFinance is a comprehensive personal finance management solution designed to hel
 - 🔐 **Secure Authentication** - Google OAuth2 sign-in with session management
 - 🚗 **Travel Tracking** - Monitor daily commute expenses (morning and evening)
 - 💳 **Expense Management** - Track miscellaneous expenses by category and payment method
+- 📈 **Investments & Savings** - Track investments across stocks, mutual funds, FDs, and more
 - 🎨 **Beautiful UI** - Modern glassmorphism design with Tailwind CSS
 - 📊 **Smart Filtering** - Filter and search your financial data effortlessly
 - 👤 **User Isolation** - Your data is private and secure
@@ -86,11 +87,12 @@ iFinance is a comprehensive personal finance management solution designed to hel
 
 ### 📱 Smart Features
 
-- **Custom Categories**: Create your own expense categories
-- **Multiple Payment Methods**: Cash, UPI, Debit Card, Credit Card
+- **Custom Categories**: Create your own expense and investment categories
+- **Multiple Payment Methods**: Cash, UPI, Debit Card, Credit Card (as payment method), Net Banking
 - **Advanced Filters**: Filter by date range, category, payment method
 - **Search**: Find transactions by description
 - **Summaries**: Automatic calculation of totals and breakdowns
+- **Investment Tracking**: Track stocks, mutual funds, FDs, savings accounts, gold, real estate, crypto
 
 ---
 
@@ -182,6 +184,17 @@ iFinance is a comprehensive personal finance management solution designed to hel
 6. Choose payment method
 7. Add optional description
 8. Click **Save**
+
+### Managing Investments & Savings
+
+1. Navigate to **Investments & Savings** from the dashboard
+2. Click **+ Add Investment**
+3. Select date
+4. Choose category (Stocks, Mutual Funds, Fixed Deposit, Gold, etc.)
+   - Select "Other" to create custom category
+5. Enter amount
+6. Add optional description
+7. Click **Save**
 
 ### Filtering & Search
 

@@ -68,17 +68,19 @@ import { User } from '../../core/models/user.model';
               <p class="text-sm text-gray-600">Manage miscellaneous expenses</p>
             </button>
             
-            <div class="glass-card p-6 opacity-50 text-center">
-              <div class="text-4xl mb-3">💳</div>
-              <h3 class="text-lg font-medium text-gray-900 mb-2">Credit Cards</h3>
-              <p class="text-sm text-gray-600">Track credit card transactions</p>
-              <p class="text-xs text-gray-500 mt-2">Coming soon...</p>
-            </div>
+            <button 
+              (click)="navigateTo('/investments')"
+              class="glass-card p-6 hover:scale-105 transition-transform cursor-pointer text-center"
+            >
+              <div class="text-4xl mb-3">�</div>
+              <h3 class="text-lg font-medium text-gray-900 mb-2">Investments & Savings</h3>
+              <p class="text-sm text-gray-600">Track your investments and savings</p>
+            </button>
           </div>
 
           <div class="mt-8 text-sm text-gray-500">
-            <p>Phase 3 (Expenses) completed! 🚀</p>
-            <p class="mt-2">Next: Credit card tracking features...</p>
+            <p>Phase 4 (Investments & Savings) completed! 🚀</p>
+            <p class="mt-2">Managing travel, expenses, and investments...</p>
           </div>
         </div>
       </main>

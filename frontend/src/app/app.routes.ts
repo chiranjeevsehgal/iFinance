@@ -47,6 +47,21 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'investments',
+    loadComponent: () => import('./features/investments/investment.component').then(m => m.InvestmentComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'investments/new',
+    loadComponent: () => import('./features/investments/investment-form.component').then(m => m.InvestmentFormComponent),
+    canActivate: [authGuard]
+  },
+  {
+    path: 'investments/edit/:id',
+    loadComponent: () => import('./features/investments/investment-form.component').then(m => m.InvestmentFormComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: '**',
     redirectTo: '/dashboard'
   }

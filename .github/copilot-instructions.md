@@ -1,7 +1,7 @@
 # iFinance - Personal Finance Web Application
 
 ## Project Overview
-A personal finance management web application built with Spring Boot backend and Angular frontend with Tailwind CSS styling. The application helps track daily expenses, travel costs, and credit card transactions with comprehensive reporting features.
+A personal finance management web application built with Spring Boot backend and Angular frontend with Tailwind CSS styling. The application helps track daily expenses, travel costs, and investments & savings with comprehensive reporting features.
 
 ## Technology Stack
 
@@ -61,7 +61,7 @@ src/app/
 │   ├── dashboard/   # Dashboard with summaries
 │   ├── travel/      # Travel records management
 │   ├── expenses/    # Miscellaneous expenses
-│   ├── credit-card/ # Credit card transactions
+│   ├── investments/ # Investments & savings tracking
 │   └── reports/     # Reports and analytics
 └── layout/          # Layout components (header, sidebar, footer)
 ```
@@ -93,13 +93,14 @@ src/app/
 - Filter by date range and time of day
 
 ### 2. Daily Miscellaneous Expenses
-**Purpose**: Track various daily expenses outside of travel and credit cards
+**Purpose**: Track various daily expenses outside of travel and investments
 
 **Backend Requirements**:
 - Document: `MiscExpense`
   - Fields: id, userId, date, category, amount, description, paymentMethod, createdAt, updatedAt
   - Enum: `ExpenseCategory` (FOOD, GROCERIES, ENTERTAINMENT, HEALTH, UTILITIES, SHOPPING, EDUCATION, OTHER)
-  - Enum: `PaymentMethod` (CASH, UPI, DEBIT_CARD, NET_BANKING, OTHER)
+  - Enum: `PaymentMethod` (CASH, UPI, CREDIT_CARD, DEBIT_CARD, NET_BANKING, OTHER)
+  - Note: CREDIT_CARD is available as a payment method option here
 - API Endpoints:
   - `POST /api/expenses` - Create expense
   - `GET /api/expenses` - Get all expenses (with pagination, filtering)
@@ -118,30 +119,35 @@ src/app/
 - List view with filtering by category and date
 - Visual category indicators (colored badges)
 
-### 3. Credit Card Transactions
-**Purpose**: Track credit card transactions with simple payment titles and amounts
+### 3. Investments & Savings
+**Purpose**: Track investments and savings across various categories
 
 **Backend Requirements**:
-- Document: `CreditCardTransaction`
-  - Fields: id, userId, date, paymentTitle, amount, createdAt, updatedAt
-  - Note: No card management - simplified single collection for all credit card transactions
+- Document: `Investment`
+  - Fields: id, userId, date, category, amount, description, otherCategoryName, createdAt, updatedAt
+  - Enum: `InvestmentCategory` (STOCKS, MUTUAL_FUNDS, FIXED_DEPOSIT, SAVINGS_ACCOUNT, GOLD, REAL_ESTATE, CRYPTO, OTHER)
 - API Endpoints:
-  - `POST /api/credit-card-transactions` - Add transaction
-  - `GET /api/credit-card-transactions` - Get all transactions (with pagination, filtering)
-  - `GET /api/credit-card-transactions/{id}` - Get specific transaction
-  - `PUT /api/credit-card-transactions/{id}` - Update transaction
-  - `DELETE /api/credit-card-transactions/{id}` - Delete transaction
-  - `GET /api/credit-card-transactions/date/{date}` - Get transactions by date
-  - `GET /api/credit-card-transactions/summary` - Get transaction summary
+  - `POST /api/investments` - Create investment
+  - `GET /api/investments` - Get all investments (with pagination, filtering)
+  - `GET /api/investments/{id}` - Get specific investment
+  - `PUT /api/investments/{id}` - Update investment
+  - `DELETE /api/investments/{id}` - Delete investment
+  - `GET /api/investments/category/{category}` - Get by category
+  - `GET /api/investments/date-range?startDate={start}&endDate={end}` - Date range
+  - `GET /api/investments/search?q={keyword}` - Search by description
+  - `GET /api/investments/summary` - Get category-wise summary
 
 **Frontend Requirements**:
-- Simple transaction entry form
+- Investment entry form
 - Date picker (default to today)
-- Payment title input (free text, few words describing the transaction)
+- Category dropdown with icons (stocks, mutual funds, FD, savings, gold, real estate, crypto, other)
+- Conditional "Other Category Name" field (shown when OTHER selected)
 - Amount input with currency symbol
-- Transaction list showing all records with edit/delete options
-- Filter by date range
-- Search by payment title
+- Description field
+- List view showing all investments with edit/delete options
+- Filter by category and date range
+- Search by description
+- Total investments display
 
 ### 4. Summary & Reports
 **Purpose**: Provide daily, weekly, and monthly financial summaries
@@ -163,15 +169,15 @@ src/app/
   "endDate": "2025-11-10",
   "totalTravel": 250.00,
   "totalMiscExpenses": 500.00,
-  "totalCreditCardExpenses": 1500.00,
+  "totalInvestments": 1500.00,
   "grandTotal": 2250.00,
   "travelCount": 2,
   "expenseCount": 5,
-  "creditCardTransactionCount": 3,
+  "investmentCount": 3,
   "breakdown": {
     "byCategory": {},
     "byPaymentMethod": {},
-    "byTravelMode": {}
+    "byInvestmentCategory": {}
   }
 }
 ```
@@ -232,14 +238,16 @@ src/app/
 }
 ```
 
-**CreditCardTransaction Collection**
+**Investment Collection**
 ```json
 {
   "_id": ObjectId,
   "userId": ObjectId,              // Reference to User collection
   "date": ISODate,
-  "paymentTitle": String,
+  "category": "STOCKS|MUTUAL_FUNDS|FIXED_DEPOSIT|...",
   "amount": Number,
+  "description": String,
+  "otherCategoryName": String,     // Required when category is OTHER
   "createdAt": ISODate,
   "updatedAt": ISODate
 }
@@ -250,7 +258,7 @@ src/app/
 - **All data collections**: Compound index `{ userId: 1, date: -1 }` for user-specific queries
 - **TravelRecord**: `{ userId: 1, date: 1, timeOfDay: 1 }`
 - **MiscExpense**: `{ userId: 1, category: 1 }`
-- **CreditCardTransaction**: `{ userId: 1 }`, text index on `paymentTitle`
+- **Investment**: `{ userId: 1, date: 1 }`, `{ userId: 1, category: 1 }`
 
 ## API Design Principles
 

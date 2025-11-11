@@ -6,8 +6,8 @@
 ## Document Information
 - **Product Name**: iFinance
 - **Version**: 1.0.0
-- **Last Updated**: November 10, 2025
-- **Status**: Planning Phase
+- **Last Updated**: November 11, 2025
+- **Status**: Active Development - Phase 4 Complete
 - **Owner**: Solo Developer
 - **Document Type**: Product Requirements Document
 
@@ -31,12 +31,13 @@
 
 ## Executive Summary
 
-**iFinance** is a personal finance management web application designed to help users track daily expenses, travel costs, and credit card transactions with minimal complexity. The application focuses on simplicity and ease of use, providing clear insights into spending patterns through comprehensive daily, weekly, and monthly summaries.
+**iFinance** is a personal finance management web application designed to help users track daily expenses, travel costs, and investments/savings with minimal complexity. The application focuses on simplicity and ease of use, providing clear insights into spending patterns through comprehensive daily, weekly, and monthly summaries.
 
 ### Key Highlights
 - **Multi-user application** with Google OAuth2 authentication
 - **Minimal glass theme** for modern, clean aesthetics
 - **Simple data entry** with cost-focused tracking
+- **Investment & savings tracking** across multiple categories
 - **Comprehensive reporting** to identify spending patterns
 - **Secure user data isolation**
 - **Local deployment** with cloud database (MongoDB Atlas)
@@ -60,8 +61,8 @@ Many personal finance apps are overly complex with features that most users don'
 A lightweight web application with minimal glass-themed UI that allows:
 - Easy sign-in with Google account
 - Fast entry of daily travel costs (morning/evening)
-- Quick logging of miscellaneous expenses
-- Simple credit card transaction tracking
+- Quick logging of miscellaneous expenses (with credit card as payment method option)
+- Investment and savings tracking across multiple categories
 - Visual summaries showing spending patterns across different time periods
 - Secure, isolated data for each user
 
@@ -112,7 +113,7 @@ A lightweight web application with minimal glass-themed UI that allows:
 ### Secondary Success Metrics
 
 4. **Data Completeness**
-   - All expense types covered (travel, misc, credit card)
+   - All expense types covered (travel, misc expenses, investments)
    - Consistent logging without gaps
 
 5. **User Satisfaction**
@@ -141,14 +142,14 @@ A lightweight web application with minimal glass-themed UI that allows:
 
 3. **Miscellaneous Expenses**
    - Category-based expense tracking
-   - Payment method tracking
+   - Payment method tracking (including credit card)
    - Description field for context
    - User-specific data
 
-4. **Credit Card Transactions**
-   - Simple payment title and amount tracking
+4. **Investments & Savings**
+   - Multi-category investment tracking (Stocks, Mutual Funds, FDs, Gold, etc.)
    - Date-based organization
-   - Search functionality
+   - Description field for notes
    - User-specific data
 
 5. **Summary & Reports**
@@ -319,45 +320,52 @@ A lightweight web application with minimal glass-themed UI that allows:
 
 ---
 
-### FR-3: Credit Card Transactions
+### FR-3: Investments & Savings
 
-#### FR-3.1: Create Transaction
-- **Description**: User can log a credit card transaction
+#### FR-3.1: Create Investment Record
+- **Description**: User can log an investment or savings entry
 - **Input Fields**:
   - Date (default: today)
-  - Payment Title (text input, few words describing transaction)
+  - Category (dropdown: Stocks, Mutual Funds, Fixed Deposit, Savings Account, Gold, Real Estate, Crypto, Other)
+  - Custom Category Name (text input, shown when "Other" selected)
   - Amount (number input, required)
+  - Description (text area, optional)
 - **Validation**:
   - Date cannot be future date
   - Amount must be positive number
-  - Payment title required (max 100 characters)
-- **Success Response**: Transaction saved, confirmation message
+  - Category required
+  - Custom category name required when "Other" selected (max 50 characters)
+  - Description max 500 characters
+- **Success Response**: Investment saved, confirmation message
 
-#### FR-3.2: View Transactions
-- **Description**: User can view list of all credit card transactions
-- **Display Fields**: Date, Payment Title, Amount
+#### FR-3.2: View Investments
+- **Description**: User can view list of all investment records
+- **Display Fields**: Date, Category, Amount, Description
 - **Features**:
-  - Sortable by date, amount
+  - Sortable by date, amount, category
   - Filter by date range
-  - Search by payment title (text search)
+  - Filter by category
+  - Search by description (text search)
   - Pagination (20 records per page)
+  - Category badges with icons and colors
 
-#### FR-3.3: Edit Transaction
-- **Description**: User can modify existing transaction
+#### FR-3.3: Edit Investment
+- **Description**: User can modify existing investment record
 - **Functionality**: Pre-populate form, allow changes
 - **Validation**: Same as create
 
-#### FR-3.4: Delete Transaction
-- **Description**: User can remove a transaction
+#### FR-3.4: Delete Investment
+- **Description**: User can remove an investment record
 - **Confirmation**: Show confirmation dialog
 - **Success**: Record removed, list updated
 
-#### FR-3.5: Transaction Summary
-- **Description**: View aggregated credit card expenses
+#### FR-3.5: Investment Summary
+- **Description**: View aggregated investment data
 - **Views**:
   - Daily/weekly/monthly totals
-  - Transaction count
-  - Average transaction amount
+  - Investment count
+  - Category-wise breakdown
+  - Total investment amount
 
 ---
 
@@ -372,7 +380,7 @@ A lightweight web application with minimal glass-themed UI that allows:
   - Quick stats cards (glass effect):
     - Total Travel Cost
     - Total Misc Expenses
-    - Total Credit Card Expenses
+    - Total Investments & Savings
     - Grand Total
   - Transaction counts for each category
 
@@ -382,7 +390,7 @@ A lightweight web application with minimal glass-themed UI that allows:
 - **Display**:
   - Travel costs (morning + evening)
   - Miscellaneous expenses (by category)
-  - Credit card transactions
+  - Investment records
   - Daily total
 - **Visualization**: Donut chart showing category distribution
 
@@ -584,7 +592,7 @@ A lightweight web application with minimal glass-themed UI that allows:
 │              MongoDB Atlas (Cloud)                       │
 │         Collections: users, sessions,                    │
 │         travel_records, misc_expenses,                   │
-│         credit_card_transactions                         │
+│         investments                                      │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -635,35 +643,36 @@ src/main/java/com/ifinance/
 │   ├── UserController.java           # User profile endpoints
 │   ├── TravelController.java         # Travel records API
 │   ├── ExpenseController.java        # Misc expenses API
-│   ├── CreditCardController.java     # Credit card transactions API
+│   ├── InvestmentController.java     # Investments & savings API
 │   └── ReportController.java         # Reports and summaries API
 ├── service/
 │   ├── UserService.java              # User management logic
 │   ├── TravelService.java            # Travel business logic
 │   ├── ExpenseService.java           # Expense business logic
-│   ├── CreditCardService.java        # Credit card business logic
+│   ├── InvestmentService.java        # Investment business logic
 │   └── ReportService.java            # Report generation logic
 ├── repository/
 │   ├── UserRepository.java           # User data access
 │   ├── TravelRepository.java         # Travel data access
 │   ├── ExpenseRepository.java        # Expense data access
-│   └── CreditCardRepository.java     # Credit card data access
+│   └── InvestmentRepository.java     # Investment data access
 ├── model/
 │   ├── document/
 │   │   ├── User.java                 # User document
 │   │   ├── TravelRecord.java         # Travel document
 │   │   ├── MiscExpense.java          # Expense document
-│   │   └── CreditCardTransaction.java # CC transaction document
+│   │   └── Investment.java           # Investment document
 │   ├── dto/
 │   │   ├── UserDto.java              # User DTO
 │   │   ├── TravelRecordDto.java      # Travel DTO
 │   │   ├── ExpenseDto.java           # Expense DTO
-│   │   ├── TransactionDto.java       # Transaction DTO
+│   │   ├── InvestmentDto.java        # Investment DTO
 │   │   └── SummaryDto.java           # Summary response DTO
 │   └── enums/
 │       ├── TimeOfDay.java            # MORNING, EVENING
 │       ├── ExpenseCategory.java      # Expense categories
-│       └── PaymentMethod.java        # Payment methods
+│       ├── PaymentMethod.java        # Payment methods
+│       └── InvestmentCategory.java   # Investment categories
 ├── exception/
 │   ├── ResourceNotFoundException.java # Custom exception
 │   ├── UnauthorizedException.java    # Unauthorized access exception
@@ -688,7 +697,7 @@ src/app/
 │   │   ├── user.service.ts           # User profile service
 │   │   ├── travel.service.ts         # Travel API service
 │   │   ├── expense.service.ts        # Expense API service
-│   │   ├── credit-card.service.ts    # Credit card API service
+│   │   ├── investment.service.ts     # Investment API service
 │   │   └── report.service.ts         # Report API service
 │   ├── guards/
 │   │   └── auth.guard.ts             # Route authentication guard
@@ -696,7 +705,7 @@ src/app/
 │   │   ├── user.model.ts             # User interface
 │   │   ├── travel-record.model.ts    # Travel interface
 │   │   ├── expense.model.ts          # Expense interface
-│   │   ├── transaction.model.ts      # Transaction interface
+│   │   ├── investment.model.ts       # Investment interface
 │   │   └── summary.model.ts          # Summary interface
 │   └── interceptors/
 │       ├── http-error.interceptor.ts # Error handling
@@ -732,10 +741,10 @@ src/app/
 │   │   ├── expense-list/             # Expense list
 │   │   ├── expense-form/             # Expense entry form
 │   │   └── expenses.component.ts     # Expenses parent
-│   ├── credit-card/
-│   │   ├── transaction-list/         # Transaction list
-│   │   ├── transaction-form/         # Transaction form
-│   │   └── credit-card.component.ts  # Credit card parent
+│   ├── investments/
+│   │   ├── investment-list/          # Investment list
+│   │   ├── investment-form/          # Investment form
+│   │   └── investment.component.ts   # Investments parent
 │   └── reports/
 │       ├── daily-report/             # Daily summary
 │       ├── weekly-report/            # Weekly summary
@@ -803,21 +812,24 @@ src/app/
 - `{ userId: 1, category: 1 }` - For category filtering
 - `{ createdAt: -1 }` - For sorting
 
-#### Collection: credit_card_transactions
+#### Collection: investments
 ```json
 {
   "_id": ObjectId("..."),
-  "userId": ObjectId("..."),          // Reference to users collection (required)
+  "userId": ObjectId("..."),          // Reference to User
   "date": ISODate("2025-11-10T00:00:00Z"),
-  "paymentTitle": "Online Shopping",
-  "amount": 1500.00,
+  "category": "STOCKS",               // STOCKS, MUTUAL_FUNDS, FIXED_DEPOSIT, SAVINGS_ACCOUNT, GOLD, REAL_ESTATE, CRYPTO, OTHER
+  "amount": 10000.00,
+  "description": "Monthly SIP in mutual fund",
+  "otherCategoryName": null,          // Custom category name when category is OTHER
   "createdAt": ISODate("2025-11-10T15:00:00Z"),
   "updatedAt": ISODate("2025-11-10T15:00:00Z")
 }
 ```
 **Indexes:**
 - `{ userId: 1, date: -1 }` - Compound index for user-specific date queries
-- `{ userId: 1 }` + Text index on `paymentTitle` - For search within user's data
+- `{ userId: 1, category: 1 }` - Compound index for category filtering
+- Text index on `description` - For search within user's data
 - `{ createdAt: -1 }` - For sorting
 
 #### Collection: sessions (Spring Session)
@@ -866,16 +878,16 @@ src/app/
 | GET | `/api/expenses/category/{category}` | Get by category for current user |
 | GET | `/api/expenses/summary?period={period}` | Get expense summary for current user |
 
-#### Credit Card Transactions API
+#### Investments & Savings API
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/credit-card-transactions` | Create transaction (auto-adds userId) |
-| GET | `/api/credit-card-transactions` | Get all transactions for current user (paginated) |
-| GET | `/api/credit-card-transactions/{id}` | Get specific transaction (must belong to user) |
-| PUT | `/api/credit-card-transactions/{id}` | Update transaction (must belong to user) |
-| DELETE | `/api/credit-card-transactions/{id}` | Delete transaction (must belong to user) |
-| GET | `/api/credit-card-transactions/date/{date}` | Get by date for current user |
-| GET | `/api/credit-card-transactions/summary?period={period}` | Get transaction summary for current user |
+| POST | `/api/investments` | Create investment (auto-adds userId) |
+| GET | `/api/investments` | Get all investments for current user (paginated) |
+| GET | `/api/investments/{id}` | Get specific investment (must belong to user) |
+| PUT | `/api/investments/{id}` | Update investment (must belong to user) |
+| DELETE | `/api/investments/{id}` | Delete investment (must belong to user) |
+| GET | `/api/investments/category/{category}` | Get by category for current user |
+| GET | `/api/investments/summary?period={period}` | Get investment summary for current user |
 
 #### Reports API
 | Method | Endpoint | Description |
@@ -992,20 +1004,20 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 ├───────────────────────────────────────────────────────┤
 │                                                        │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐    │
-│  │  Travel     │ │  Misc       │ │  Credit Card │    │
-│  │  ₹ 150.00   │ │  ₹ 500.00   │ │  ₹ 1,200.00  │    │
+│  │  Travel     │ │  Expenses   │ │ Investments │    │
+│  │  ₹ 150.00   │ │  ₹ 500.00   │ │  ₹10,000.00  │    │
 │  │  Glass Card │ │  Glass Card │ │  Glass Card  │    │
 │  └─────────────┘ └─────────────┘ └─────────────┘    │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
-│  │  Today's Total: ₹ 1,850.00 (Glass Card)      │    │
+│  │  Today's Total: ₹ 10,650.00 (Glass Card)     │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
 │  │  Recent Transactions (Glass Card)             │    │
 │  │  • Morning Travel - ₹50                       │    │
 │  │  • Lunch (Food) - ₹200                        │    │
-│  │  • Online Shopping - ₹1,200                   │    │
+│  │  • Monthly SIP (Mutual Funds) - ₹10,000      │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
@@ -1071,28 +1083,29 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 └───────────────────────────────────────────────────────┘
 ```
 
-#### Credit Card Transactions Page
+#### Investments & Savings Page
 ```
 ┌───────────────────────────────────────────────────────┐
-│  Credit Card Transactions             [+ Add New]      │
+│  Investments & Savings                 [+ Add New]     │
 ├───────────────────────────────────────────────────────┤
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
 │  │  Quick Entry Form (Glass Card)                │    │
 │  │  Date: [________]                             │    │
-│  │  Payment Title: [___________________]         │    │
-│  │  Amount: [____________]             [Save]    │    │
+│  │  Category: [Stocks ▼]                         │    │
+│  │  Amount: [____________]                       │    │
+│  │  Description: [___________________] [Save]    │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
-│  Filters: [Date Range]                                │
+│  Filters: [Date Range] [Category ▼]                   │
 │  Search: [_____________________________]              │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
-│  │  Date        │ Payment Title   │ Amount │ ... │    │
+│  │  Date        │ Category      │ Amount    │... │    │
 │  ├──────────────────────────────────────────────┤    │
-│  │  2025-11-10  │ Online Shopping │ ₹1,200 │ ...│    │
-│  │  2025-11-08  │ Subscription    │ ₹499   │ ...│    │
-│  │  2025-11-05  │ Restaurant      │ ₹850   │ ...│    │
+│  │  2025-11-10  │ 📈 Stocks     │ ₹5,000   │... │    │
+│  │  2025-11-08  │ 📊 Mutual Fnd │ ₹10,000  │... │    │
+│  │  2025-11-05  │ 🏦 Fixed Dep. │ ₹50,000  │... │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
 └───────────────────────────────────────────────────────┘
@@ -1111,11 +1124,11 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 │  │  Summary (Glass Card)                         │    │
 │  │  Period: Daily - November 10, 2025            │    │
 │  │                                               │    │
-│  │  Travel:           ₹   150.00  (2 trips)      │    │
-│  │  Misc Expenses:    ₹   500.00  (3 entries)    │    │
-│  │  Credit Card:      ₹ 1,200.00  (1 transaction)│    │
+│  │  Travel:           ₹     150.00  (2 trips)    │    │
+│  │  Misc Expenses:    ₹     500.00  (3 entries)  │    │
+│  │  Investments:      ₹  10,000.00  (1 entry)    │    │
 │  │  ───────────────────────────────────────────  │    │
-│  │  Grand Total:      ₹ 1,850.00                 │    │
+│  │  Grand Total:      ₹  10,650.00               │    │
 │  └──────────────────────────────────────────────┘    │
 │                                                        │
 │  ┌──────────────────────────────────────────────┐    │
@@ -1289,39 +1302,43 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 - ✅ Complete expense tracking CRUD for authenticated users
 - ✅ User-specific data isolation
 - ✅ Category-wise organization with visual indicators
-- ✅ Payment method tracking
+- ✅ Payment method tracking (including credit card)
 - ✅ Advanced filtering and search
 - ✅ Tested and working feature
 
 ---
 
-### Phase 4: Credit Card Transactions Feature
-**Goal**: Implement credit card transaction tracking with user isolation
+### Phase 4: Investments & Savings Feature
+**Goal**: Implement investment and savings tracking with user isolation
 
 **Backend Tasks**:
-1. Create `CreditCardTransaction` document class with `userId` field
-2. Create `CreditCardRepository` interface with user-filtered queries
-3. Implement text index for payment title search (user-scoped)
-4. Implement `CreditCardService` with CRUD operations (auto-add userId, filter by userId)
-5. Create `CreditCardController` with REST endpoints (extract userId from SecurityContext)
-6. Add validation
-7. Write unit tests with mock authentication
+1. Create `InvestmentCategory` enum with 8 categories
+2. Create `Investment` document class with `userId` field
+3. Create `InvestmentRepository` interface with user-filtered queries
+4. Implement text index for description search (user-scoped)
+5. Implement `InvestmentService` with CRUD operations (auto-add userId, filter by userId)
+6. Create `InvestmentController` with REST endpoints (extract userId from SecurityContext)
+7. Add validation (including custom category name when OTHER selected)
+8. Write unit tests with mock authentication
 
 **Frontend Tasks**:
-1. Create credit card module with routing (protected by AuthGuard)
-2. Implement transaction list component with glass styling
-3. Create transaction form component (create/edit)
-4. Implement search functionality for payment titles
-5. Add date-based filtering
-6. Add pagination
-7. Implement edit and delete with confirmation
-8. Show transaction summary (user-specific)
-9. Handle authentication errors (redirect to login)
+1. Create investment module with routing (protected by AuthGuard)
+2. Implement investment list component with glass styling
+3. Create investment form component (create/edit)
+4. Implement category dropdown with 8 categories and icons
+5. Add conditional "Other Category Name" field
+6. Implement search functionality for descriptions
+7. Add date and category filtering
+8. Add pagination
+9. Implement edit and delete with confirmation
+10. Show investment summary with category breakdown (user-specific)
+11. Handle authentication errors (redirect to login)
 
 **Deliverables**:
-- ✅ Complete credit card transaction CRUD for authenticated users
+- ✅ Complete investment tracking CRUD for authenticated users
 - ✅ User-specific data isolation
-- ✅ Search functionality
+- ✅ Multi-category support with custom categories
+- ✅ Search and filtering functionality
 - ✅ Simple, fast entry form
 - ✅ Tested and working feature
 
@@ -1339,11 +1356,10 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 6. Create `ReportController` with summary endpoints (extract userId from SecurityContext)
 7. Optimize queries with aggregation pipeline
 8. Write unit tests with mock authentication
-8. Write unit tests
 
 **Frontend Tasks**:
 1. Create dashboard component with glass styling (protected by AuthGuard)
-2. Implement summary cards (travel, expenses, credit card, total) for current user
+2. Implement summary cards (travel, expenses, investments, total) for current user
 3. Add period selector (daily/weekly/monthly)
 4. Show recent transactions list (user-specific)
 5. Display transaction counts
@@ -1563,8 +1579,8 @@ bg-white/30 backdrop-blur-lg border border-white/50 shadow-xl
 
 #### Third-Party Integrations
 - **Bank Sync**: Automatic transaction import from bank accounts
-- **Credit Card**: Direct credit card transaction sync
-- **Investment**: Portfolio tracking integration
+- **Investment Platforms**: Portfolio tracking integration with investment platforms
+- **Payment Methods**: Integration with UPI, payment apps for automatic expense tracking
 
 #### Progressive Web App (PWA)
 - **Feature**: Install as desktop/mobile app

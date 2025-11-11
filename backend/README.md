@@ -191,10 +191,10 @@ String userId = SecurityUtil.getCurrentUserId();
 
 ## Next Steps
 
-- [ ] Set up frontend Angular application
-- [ ] Implement travel records feature
-- [ ] Implement expenses feature
-- [ ] Implement credit card transactions feature
+- [x] Set up frontend Angular application
+- [x] Implement travel records feature
+- [x] Implement expenses feature
+- [x] Implement investments & savings feature
 - [ ] Add dashboard and reports
 
 ## License
