@@ -19,13 +19,26 @@ import {
   template: `
     <div class="container mx-auto px-4 py-8">
       <!-- Header -->
-      <div class="flex justify-between items-center mb-8">
-        <h1 class="text-3xl font-light text-gray-900">Investments & Savings</h1>
-        <a
-          routerLink="/investments/new"
-          class="glass-button-primary px-6 py-2.5 text-sm font-medium">
-          + Add Investment
-        </a>
+      <div class="glass-card mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <button 
+              (click)="goBack()"
+              class="glass-button px-4 py-2 rounded-lg"
+            >
+              ← Back
+            </button>
+            <div>
+              <h1 class="text-2xl font-light text-gray-900">Investments & Savings 📈</h1>
+              <p class="text-sm text-gray-600">Track your investments and savings</p>
+            </div>
+          </div>
+          <a
+            routerLink="/investments/new"
+            class="glass-button-primary px-6 py-2.5 text-sm font-medium rounded-lg">
+            + Add Investment
+          </a>
+        </div>
       </div>
 
       <!-- Filters -->
@@ -317,5 +330,9 @@ export class InvestmentComponent implements OnInit {
         }
       });
     }
+  }
+
+  goBack(): void {
+    this.router.navigate(['/dashboard']);
   }
 }

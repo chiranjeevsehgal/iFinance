@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="min-h-screen p-4">
+    <div class="container mx-auto px-4 py-8">
       <!-- Header -->
       <div class="glass-card mb-6">
         <div class="flex items-center justify-between">
@@ -28,7 +28,7 @@ import { FormsModule } from '@angular/forms';
           </div>
           <button 
             (click)="addNew()"
-            class="glass-button-primary px-6 py-2 rounded-lg font-medium"
+            class="glass-button-primary px-6 py-2.5 text-sm font-medium rounded-lg"
           >
             + Add Travel
           </button>
@@ -36,7 +36,7 @@ import { FormsModule } from '@angular/forms';
       </div>
 
       <!-- Filters -->
-      <div class="glass-card mb-6">
+      <div class="glass-card p-6 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
@@ -44,7 +44,7 @@ import { FormsModule } from '@angular/forms';
               type="date" 
               [(ngModel)]="filterStartDate"
               (change)="applyFilters()"
-              class="glass-input w-full"
+              class="glass-input w-full px-4 py-2 text-sm"
             />
           </div>
           <div>
@@ -53,7 +53,7 @@ import { FormsModule } from '@angular/forms';
               type="date" 
               [(ngModel)]="filterEndDate"
               (change)="applyFilters()"
-              class="glass-input w-full"
+              class="glass-input w-full px-4 py-2 text-sm"
             />
           </div>
           <div>
@@ -61,7 +61,7 @@ import { FormsModule } from '@angular/forms';
             <select 
               [(ngModel)]="filterTimeOfDay"
               (change)="applyFilters()"
-              class="glass-input w-full"
+              class="glass-input w-full px-4 py-2 text-sm"
             >
               <option value="">All</option>
               <option value="MORNING">Morning</option>
@@ -84,7 +84,7 @@ import { FormsModule } from '@angular/forms';
         <p class="text-gray-600 mb-4">Start tracking your daily commute expenses</p>
         <button 
           (click)="addNew()"
-          class="glass-button-primary px-6 py-2 rounded-lg"
+          class="glass-button-primary px-6 py-2.5 text-sm font-medium rounded-lg"
         >
           Add Your First Travel Record
         </button>
