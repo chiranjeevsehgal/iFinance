@@ -27,6 +27,11 @@ export const routes: Routes = [
     canActivate: [authGuard]
   },
   {
+    path: 'travel/edit-day',
+    loadComponent: () => import('./features/travel/travel-daily-form.component').then(m => m.TravelDailyFormComponent),
+    canActivate: [authGuard]
+  },
+  {
     path: 'travel/edit/:id',
     loadComponent: () => import('./features/travel/travel-form.component').then(m => m.TravelFormComponent),
     canActivate: [authGuard]

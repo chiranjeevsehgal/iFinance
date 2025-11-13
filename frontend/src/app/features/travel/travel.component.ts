@@ -5,6 +5,15 @@ import { TravelService } from '../../core/services/travel.service';
 import { TravelRecord, TimeOfDay } from '../../core/models/travel-record.model';
 import { FormsModule } from '@angular/forms';
 
+interface DailyTravelRecord {
+  date: string;
+  morningRecord?: TravelRecord;
+  eveningRecord?: TravelRecord;
+  morningCost: number;
+  eveningCost: number;
+  dailyTotal: number;
+}
+
 @Component({
   selector: 'app-travel',
   standalone: true,
@@ -91,7 +100,7 @@ import { FormsModule } from '@angular/forms';
       </div>
 
       <!-- Records Table -->
-      <div *ngIf="!loading && filteredRecords.length > 0" class="glass-card overflow-hidden">
+      <div *ngIf="!loading && dailyRecords.length > 0" class="glass-card overflow-hidden">
         <div class="overflow-x-auto">
           <table class="min-w-full">
             <thead class="bg-white/20">
@@ -99,11 +108,14 @@ import { FormsModule } from '@angular/forms';
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Date
                 </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Time of Day
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  🌅 Morning
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
-                  Cost
+                  🌆 Evening
+                </th>
+                <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
+                  Daily Total
                 </th>
                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-700 uppercase tracking-wider">
                   Actions
@@ -111,34 +123,46 @@ import { FormsModule } from '@angular/forms';
               </tr>
             </thead>
             <tbody class="divide-y divide-white/20">
-              <tr *ngFor="let record of filteredRecords" class="hover:bg-white/10 transition-colors">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {{ formatDate(record.date) }}
+              <tr *ngFor="let daily of dailyRecords" class="hover:bg-white/10 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {{ formatDate(daily.date) }}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span 
-                    class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
-                    [class]="record.timeOfDay === 'MORNING' ? 'bg-yellow-100/50 text-yellow-800' : 'bg-indigo-100/50 text-indigo-800'"
-                  >
-                    {{ record.timeOfDay === 'MORNING' ? '🌅 Morning' : '🌆 Evening' }}
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-700">
+                  <span *ngIf="daily.morningRecord" class="font-medium text-gray-900">
+                    ₹{{ daily.morningCost.toFixed(2) }}
+                  </span>
+                  <span *ngIf="!daily.morningRecord" class="text-gray-400">
+                    —
                   </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-medium text-gray-900">
-                  ₹{{ record.cost.toFixed(2) }}
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-700">
+                  <span *ngIf="daily.eveningRecord" class="font-medium text-gray-900">
+                    ₹{{ daily.eveningCost.toFixed(2) }}
+                  </span>
+                  <span *ngIf="!daily.eveningRecord" class="text-gray-400">
+                    —
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-indigo-700">
+                  ₹{{ daily.dailyTotal.toFixed(2) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button 
-                    (click)="editRecord(record)"
-                    class="text-indigo-600 hover:text-indigo-900 mr-4"
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    (click)="deleteRecord(record)"
-                    class="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+                  <div class="flex items-center justify-end gap-3">
+                    <button 
+                      (click)="editDailyRecord(daily)"
+                      class="text-indigo-600 hover:text-indigo-900 font-medium"
+                      title="Edit travel records for this day"
+                    >
+                      ✏️ Edit
+                    </button>
+                    <button 
+                      (click)="deleteDailyRecord(daily)"
+                      class="text-red-600 hover:text-red-900 font-medium"
+                      title="Delete all records for this day"
+                    >
+                      🗑️ Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -149,10 +173,12 @@ import { FormsModule } from '@angular/forms';
         <div class="border-t border-white/20 bg-white/10 px-6 py-4">
           <div class="flex items-center justify-between">
             <div class="text-sm text-gray-600">
+              Total Days: <span class="font-medium text-gray-900">{{ dailyRecords.length }}</span>
+              <span class="mx-2">•</span>
               Total Records: <span class="font-medium text-gray-900">{{ filteredRecords.length }}</span>
             </div>
             <div class="text-lg font-medium text-gray-900">
-              Total: <span class="text-indigo-600">₹{{ calculateTotal().toFixed(2) }}</span>
+              Grand Total: <span class="text-indigo-600">₹{{ calculateTotal().toFixed(2) }}</span>
             </div>
           </div>
         </div>
@@ -164,6 +190,7 @@ import { FormsModule } from '@angular/forms';
 export class TravelComponent implements OnInit {
   records: TravelRecord[] = [];
   filteredRecords: TravelRecord[] = [];
+  dailyRecords: DailyTravelRecord[] = [];
   loading = false;
 
   filterStartDate = '';
@@ -212,6 +239,41 @@ export class TravelComponent implements OnInit {
 
       return matches;
     });
+
+    // Group by date
+    this.groupRecordsByDate();
+  }
+
+  groupRecordsByDate(): void {
+    const dateMap = new Map<string, DailyTravelRecord>();
+
+    // Group records by date
+    this.filteredRecords.forEach(record => {
+      if (!dateMap.has(record.date)) {
+        dateMap.set(record.date, {
+          date: record.date,
+          morningCost: 0,
+          eveningCost: 0,
+          dailyTotal: 0
+        });
+      }
+
+      const dailyRecord = dateMap.get(record.date)!;
+      
+      if (record.timeOfDay === TimeOfDay.MORNING) {
+        dailyRecord.morningRecord = record;
+        dailyRecord.morningCost = record.cost;
+      } else {
+        dailyRecord.eveningRecord = record;
+        dailyRecord.eveningCost = record.cost;
+      }
+
+      dailyRecord.dailyTotal = dailyRecord.morningCost + dailyRecord.eveningCost;
+    });
+
+    // Convert to array and sort by date (oldest first - ascending order)
+    this.dailyRecords = Array.from(dateMap.values())
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
 
   addNew(): void {
@@ -222,8 +284,23 @@ export class TravelComponent implements OnInit {
     this.router.navigate(['/travel/edit', record.id]);
   }
 
+  editDailyRecord(daily: DailyTravelRecord): void {
+    // Navigate to edit form with the date
+    // If both records exist, we'll edit both; if only one exists, we can add the other
+    this.router.navigate(['/travel/edit-day'], { 
+      queryParams: { 
+        date: daily.date,
+        morningId: daily.morningRecord?.id,
+        eveningId: daily.eveningRecord?.id,
+        morningCost: daily.morningRecord?.cost,
+        eveningCost: daily.eveningRecord?.cost
+      } 
+    });
+  }
+
   deleteRecord(record: TravelRecord): void {
-    if (confirm(`Are you sure you want to delete this travel record from ${this.formatDate(record.date)}?`)) {
+    const timeOfDayLabel = record.timeOfDay === TimeOfDay.MORNING ? 'morning' : 'evening';
+    if (confirm(`Are you sure you want to delete the ${timeOfDayLabel} record from ${this.formatDate(record.date)}?`)) {
       this.travelService.deleteTravelRecord(record.id!).subscribe({
         next: () => {
           this.loadRecords();
@@ -232,6 +309,48 @@ export class TravelComponent implements OnInit {
           console.error('Error deleting travel record:', error);
           alert('Failed to delete travel record');
         }
+      });
+    }
+  }
+
+  deleteDailyRecord(daily: DailyTravelRecord): void {
+    const recordCount = (daily.morningRecord ? 1 : 0) + (daily.eveningRecord ? 1 : 0);
+    const message = recordCount === 2 
+      ? `Are you sure you want to delete both morning and evening records from ${this.formatDate(daily.date)}?`
+      : `Are you sure you want to delete the ${daily.morningRecord ? 'morning' : 'evening'} record from ${this.formatDate(daily.date)}?`;
+    
+    if (confirm(message)) {
+      const deleteRequests = [];
+      
+      if (daily.morningRecord) {
+        deleteRequests.push(this.travelService.deleteTravelRecord(daily.morningRecord.id!));
+      }
+      
+      if (daily.eveningRecord) {
+        deleteRequests.push(this.travelService.deleteTravelRecord(daily.eveningRecord.id!));
+      }
+
+      // Use a simple counter to track completed deletions
+      let completed = 0;
+      const total = deleteRequests.length;
+
+      deleteRequests.forEach(request => {
+        request.subscribe({
+          next: () => {
+            completed++;
+            if (completed === total) {
+              this.loadRecords();
+            }
+          },
+          error: (error) => {
+            console.error('Error deleting travel record:', error);
+            completed++;
+            if (completed === total) {
+              alert('Some records failed to delete');
+              this.loadRecords();
+            }
+          }
+        });
       });
     }
   }

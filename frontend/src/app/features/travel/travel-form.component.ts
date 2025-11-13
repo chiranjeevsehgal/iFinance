@@ -96,7 +96,7 @@ import { TravelRecord, TimeOfDay } from '../../core/models/travel-record.model';
                   <input 
                     type="number" 
                     formControlName="cost"
-                    step="0.01"
+                    step="1"
                     min="0"
                     placeholder="0.00"
                     class="glass-input w-full pl-8"
@@ -105,7 +105,7 @@ import { TravelRecord, TimeOfDay } from '../../core/models/travel-record.model';
                 </div>
                 <p *ngIf="isFieldInvalid('cost')" class="mt-1 text-sm text-red-600">
                   <span *ngIf="travelForm.get('cost')?.errors?.['required']">Cost is required</span>
-                  <span *ngIf="travelForm.get('cost')?.errors?.['min']">Cost must be greater than 0</span>
+                  <span *ngIf="travelForm.get('cost')?.errors?.['min']">Cost must be 0 or greater</span>
                 </p>
               </div>
 
@@ -168,7 +168,7 @@ export class TravelFormComponent implements OnInit {
     this.travelForm = this.fb.group({
       date: ['', Validators.required],
       timeOfDay: ['', Validators.required],
-      cost: ['', [Validators.required, Validators.min(0.01)]]
+      cost: ['', [Validators.required, Validators.min(0)]]
     });
   }
 

@@ -2,7 +2,7 @@ package com.ifinance.model.document;
 
 import com.ifinance.model.enums.TimeOfDay;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,7 +45,7 @@ public class TravelRecord {
     private TimeOfDay timeOfDay;
 
     @NotNull(message = "Cost is required")
-    @Positive(message = "Cost must be positive")
+    @PositiveOrZero(message = "Cost must be zero or positive")
     private BigDecimal cost;
 
     @CreatedDate
