@@ -39,7 +39,7 @@ public class ReportService {
 
         // Fetch all data
         // Note: For same-day queries, we need to use inclusive end date
-        // MongoDB's $gte and $lte operators work with LocalDate, but Spring Data's Between is inclusive on both ends
+        // MongoDB's Between query is inclusive on start but exclusive on end, so we add 1 day to endDate
         List<TravelRecord> travelRecords;
         List<MiscExpense> expenses;
         List<Investment> investments;
@@ -50,10 +50,11 @@ public class ReportService {
             expenses = expenseRepository.findByUserIdAndDateOrderByCreatedAtDesc(userId, startDate);
             investments = investmentRepository.findByUserIdAndDateOrderByCreatedAtDesc(userId, startDate);
         } else {
-            // For date ranges, use between query
-            travelRecords = travelRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
-            expenses = expenseRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
-            investments = investmentRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
+            // For date ranges, add 1 day to endDate to make it inclusive
+            LocalDate inclusiveEndDate = endDate.plusDays(1);
+            travelRecords = travelRepository.findByUserIdAndDateBetween(userId, startDate, inclusiveEndDate);
+            expenses = expenseRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, inclusiveEndDate);
+            investments = investmentRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, inclusiveEndDate);
         }
 
         // Calculate totals
