@@ -38,11 +38,23 @@ public class ReportService {
         log.debug("Generating comprehensive summary for user {} between {} and {}", userId, startDate, endDate);
 
         // Fetch all data
-        List<TravelRecord> travelRecords = travelRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
-        System.out.println("travelRecords");
-        System.out.println(travelRecords);
-        List<MiscExpense> expenses = expenseRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
-        List<Investment> investments = investmentRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
+        // Note: For same-day queries, we need to use inclusive end date
+        // MongoDB's $gte and $lte operators work with LocalDate, but Spring Data's Between is inclusive on both ends
+        List<TravelRecord> travelRecords;
+        List<MiscExpense> expenses;
+        List<Investment> investments;
+        
+        if (startDate.equals(endDate)) {
+            // For single day, use exact date match to ensure we get all records
+            travelRecords = travelRepository.findByUserIdAndDate(userId, startDate);
+            expenses = expenseRepository.findByUserIdAndDateOrderByCreatedAtDesc(userId, startDate);
+            investments = investmentRepository.findByUserIdAndDateOrderByCreatedAtDesc(userId, startDate);
+        } else {
+            // For date ranges, use between query
+            travelRecords = travelRepository.findByUserIdAndDateBetween(userId, startDate, endDate);
+            expenses = expenseRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
+            investments = investmentRepository.findByUserIdAndDateBetweenOrderByDateDescCreatedAtDesc(userId, startDate, endDate);
+        }
 
         // Calculate totals
         BigDecimal totalTravel = travelRecords.stream()
@@ -70,8 +82,6 @@ public class ReportService {
         summary.put("expenseCount", expenses.size());
         summary.put("investmentCount", investments.size());
         summary.put("totalTransactions", travelRecords.size() + expenses.size() + investments.size());
-        System.out.println("summary");
-        System.out.println(summary);
 
         return summary;
     }
