@@ -201,17 +201,17 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
       </main>
 
       <!-- Quick Entry Modal -->
-      <div *ngIf="showQuickEntryModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      <div *ngIf="showQuickEntryModal" class="fixed inset-0 bg-white/40 backdrop-blur-md flex items-center justify-center z-50 p-4"
            (click)="closeQuickEntryModal()">
-        <div class="glass-card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+        <div class="glass-card max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
           <div class="flex items-center justify-between mb-6">
-            <h3 class="text-xl font-medium text-gray-900">Quick Add Entry</h3>
-            <button (click)="closeQuickEntryModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            <h3 class="text-2xl font-light text-gray-900">Quick Add Entry</h3>
+            <button (click)="closeQuickEntryModal()" class="text-gray-400 hover:text-gray-600 text-3xl leading-none transition-colors">&times;</button>
           </div>
 
           <!-- Entry Type Selector -->
           <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Entry Type</label>
+            <label class="block text-sm font-medium text-gray-700 mb-3">Entry Type</label>
             <div class="grid grid-cols-3 gap-3">
               <button
                 (click)="setEntryType('travel')"
@@ -242,11 +242,11 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
 
           <!-- Travel Form -->
           <form *ngIf="selectedEntryType === 'travel'" [formGroup]="travelForm" (ngSubmit)="submitTravelEntry()">
-            <div class="space-y-4">
+            <div class="space-y-6">
               <!-- Info message when editing existing records -->
               <div *ngIf="existingTravelRecords.morning || existingTravelRecords.evening" 
-                   class="glass-card p-3 bg-blue-100/30 border border-blue-300/50">
-                <p class="text-sm text-blue-800">
+                   class="bg-blue-50/50 backdrop-blur-sm border border-blue-200/50 rounded-lg p-3">
+                <p class="text-sm text-blue-700">
                   ℹ️ Existing travel records found for this date. Edit and save to update.
                 </p>
               </div>
@@ -254,41 +254,51 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
                 <input type="date" formControlName="date" 
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <!-- Morning Entry -->
-              <div class="glass-card p-4">
+              <div class="bg-white/20 backdrop-blur-sm border border-white/40 rounded-lg p-4">
                 <div class="flex items-center mb-3">
-                  <input type="checkbox" formControlName="includeMorning" class="mr-2">
-                  <label class="text-sm font-medium text-gray-700">☀️ Morning Travel</label>
+                  <input type="checkbox" formControlName="includeMorning" 
+                         class="w-4 h-4 rounded border-white/60 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0">
+                  <label class="ml-2 text-sm font-medium text-gray-700">☀️ Morning Travel</label>
                 </div>
                 <div *ngIf="travelForm.get('includeMorning')?.value">
                   <input type="number" formControlName="morningCost" placeholder="Morning cost"
-                         class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         class="glass-input w-full">
                 </div>
               </div>
 
               <!-- Evening Entry -->
-              <div class="glass-card p-4">
+              <div class="bg-white/20 backdrop-blur-sm border border-white/40 rounded-lg p-4">
                 <div class="flex items-center mb-3">
-                  <input type="checkbox" formControlName="includeEvening" class="mr-2">
-                  <label class="text-sm font-medium text-gray-700">🌙 Evening Travel</label>
+                  <input type="checkbox" formControlName="includeEvening" 
+                         class="w-4 h-4 rounded border-white/60 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0">
+                  <label class="ml-2 text-sm font-medium text-gray-700">🌙 Evening Travel</label>
                 </div>
                 <div *ngIf="travelForm.get('includeEvening')?.value">
                   <input type="number" formControlName="eveningCost" placeholder="Evening cost"
-                         class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                         class="glass-input w-full">
                 </div>
               </div>
 
-              <div class="flex gap-3 justify-end">
-                <button type="button" (click)="closeQuickEntryModal()"
-                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
-                  Cancel
+              <div class="flex gap-4 pt-4">
+                <button 
+                  type="submit"
+                  [disabled]="isSubmitting"
+                  class="glass-button-primary flex-1 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span *ngIf="!isSubmitting">Save Travel</span>
+                  <span *ngIf="isSubmitting">Saving...</span>
                 </button>
-                <button type="submit" [disabled]="!travelForm.valid || isSubmitting"
-                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
-                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                <button 
+                  type="button"
+                  (click)="closeQuickEntryModal()"
+                  [disabled]="isSubmitting"
+                  class="glass-button py-3 px-6 rounded-lg font-medium disabled:opacity-50"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
@@ -296,17 +306,17 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
 
           <!-- Expense Form -->
           <form *ngIf="selectedEntryType === 'expense'" [formGroup]="expenseForm" (ngSubmit)="submitExpenseEntry()">
-            <div class="space-y-4">
+            <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
                 <input type="date" formControlName="date"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select formControlName="category"
-                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        class="glass-input w-full">
                   <option value="">Select category</option>
                   <option *ngFor="let cat of expenseCategories" [value]="cat.value">
                     {{ cat.icon }} {{ cat.label }}
@@ -317,19 +327,19 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
               <div *ngIf="expenseForm.get('category')?.value === 'OTHER'">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Other Category Name</label>
                 <input type="text" formControlName="otherCategoryName" placeholder="Enter category name"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
                 <input type="number" formControlName="amount" placeholder="0.00"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
                 <select formControlName="paymentMethod"
-                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        class="glass-input w-full">
                   <option value="">Select payment method</option>
                   <option value="CASH">💵 Cash</option>
                   <option value="UPI">📱 UPI</option>
@@ -342,17 +352,25 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
                 <textarea formControlName="description" rows="3" placeholder="Enter description"
-                          class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                          class="glass-input w-full resize-none"></textarea>
               </div>
 
-              <div class="flex gap-3 justify-end">
-                <button type="button" (click)="closeQuickEntryModal()"
-                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
-                  Cancel
+              <div class="flex gap-4 pt-4">
+                <button 
+                  type="submit"
+                  [disabled]="isSubmitting"
+                  class="glass-button-primary flex-1 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span *ngIf="!isSubmitting">Save Expense</span>
+                  <span *ngIf="isSubmitting">Saving...</span>
                 </button>
-                <button type="submit" [disabled]="!expenseForm.valid || isSubmitting"
-                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
-                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                <button 
+                  type="button"
+                  (click)="closeQuickEntryModal()"
+                  [disabled]="isSubmitting"
+                  class="glass-button py-3 px-6 rounded-lg font-medium disabled:opacity-50"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
@@ -360,17 +378,17 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
 
           <!-- Investment Form -->
           <form *ngIf="selectedEntryType === 'investment'" [formGroup]="investmentForm" (ngSubmit)="submitInvestmentEntry()">
-            <div class="space-y-4">
+            <div class="space-y-6">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
                 <input type="date" formControlName="date"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                 <select formControlName="category"
-                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        class="glass-input w-full">
                   <option value="">Select category</option>
                   <option *ngFor="let cat of investmentCategories" [value]="cat.value">
                     {{ cat.icon }} {{ cat.label }}
@@ -381,29 +399,37 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
               <div *ngIf="investmentForm.get('category')?.value === 'OTHER'">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Other Category Name</label>
                 <input type="text" formControlName="otherCategoryName" placeholder="Enter category name"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
                 <input type="number" formControlName="amount" placeholder="0.00"
-                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                       class="glass-input w-full">
               </div>
 
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
                 <textarea formControlName="description" rows="3" placeholder="Enter description"
-                          class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                          class="glass-input w-full resize-none"></textarea>
               </div>
 
-              <div class="flex gap-3 justify-end">
-                <button type="button" (click)="closeQuickEntryModal()"
-                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
-                  Cancel
+              <div class="flex gap-4 pt-4">
+                <button 
+                  type="submit"
+                  [disabled]="isSubmitting"
+                  class="glass-button-primary flex-1 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span *ngIf="!isSubmitting">Save Investment</span>
+                  <span *ngIf="isSubmitting">Saving...</span>
                 </button>
-                <button type="submit" [disabled]="!investmentForm.valid || isSubmitting"
-                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
-                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                <button 
+                  type="button"
+                  (click)="closeQuickEntryModal()"
+                  [disabled]="isSubmitting"
+                  class="glass-button py-3 px-6 rounded-lg font-medium disabled:opacity-50"
+                >
+                  Cancel
                 </button>
               </div>
             </div>
