@@ -1,16 +1,23 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { UserService } from '../../core/services/user.service';
 import { AuthService } from '../../../../auth.service';
 import { ReportService } from '../../core/services/report.service';
+import { TravelService } from '../../core/services/travel.service';
+import { ExpenseService } from '../../core/services/expense.service';
+import { InvestmentService } from '../../core/services/investment.service';
 import { User } from '../../core/models/user.model';
 import { FinancialSummary, RecentTransaction, PeriodType } from '../../core/models/report.model';
+import { TimeOfDay } from '../../core/models/travel-record.model';
+import { ExpenseCategory, PaymentMethod, EXPENSE_CATEGORIES, getCategoryConfig } from '../../core/models/expense.model';
+import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/models/investment.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div class="min-h-screen">
       <!-- Header -->
@@ -48,6 +55,12 @@ import { FinancialSummary, RecentTransaction, PeriodType } from '../../core/mode
           <div class="flex items-center justify-between">
             <h2 class="text-lg font-medium text-gray-900">Financial Overview</h2>
             <div class="flex gap-2">
+              <button
+                (click)="openQuickEntryModal()"
+                class="glass-button-primary px-4 py-2 rounded-lg text-sm font-medium text-white transition-all duration-300"
+              >
+                + Quick Add
+              </button>
               <button
                 (click)="setPeriod('daily')"
                 [class]="selectedPeriod === 'daily' 
@@ -186,6 +199,209 @@ import { FinancialSummary, RecentTransaction, PeriodType } from '../../core/mode
           </div>
         </div>
       </main>
+
+      <!-- Quick Entry Modal -->
+      <div *ngIf="showQuickEntryModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+           (click)="closeQuickEntryModal()">
+        <div class="glass-card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-medium text-gray-900">Quick Add Entry</h3>
+            <button (click)="closeQuickEntryModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+
+          <!-- Entry Type Selector -->
+          <div class="mb-6">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Entry Type</label>
+            <div class="grid grid-cols-3 gap-3">
+              <button
+                (click)="setEntryType('travel')"
+                [class]="selectedEntryType === 'travel'
+                  ? 'glass-button-primary px-4 py-3 rounded-lg text-sm font-medium text-white transition-all'
+                  : 'glass-button px-4 py-3 rounded-lg text-sm font-medium text-gray-900 transition-all'"
+              >
+                🚗 Travel
+              </button>
+              <button
+                (click)="setEntryType('expense')"
+                [class]="selectedEntryType === 'expense'
+                  ? 'glass-button-primary px-4 py-3 rounded-lg text-sm font-medium text-white transition-all'
+                  : 'glass-button px-4 py-3 rounded-lg text-sm font-medium text-gray-900 transition-all'"
+              >
+                💰 Expense
+              </button>
+              <button
+                (click)="setEntryType('investment')"
+                [class]="selectedEntryType === 'investment'
+                  ? 'glass-button-primary px-4 py-3 rounded-lg text-sm font-medium text-white transition-all'
+                  : 'glass-button px-4 py-3 rounded-lg text-sm font-medium text-gray-900 transition-all'"
+              >
+                📈 Investment
+              </button>
+            </div>
+          </div>
+
+          <!-- Travel Form -->
+          <form *ngIf="selectedEntryType === 'travel'" [formGroup]="travelForm" (ngSubmit)="submitTravelEntry()">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" formControlName="date" 
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <!-- Morning Entry -->
+              <div class="glass-card p-4">
+                <div class="flex items-center mb-3">
+                  <input type="checkbox" formControlName="includeMorning" class="mr-2">
+                  <label class="text-sm font-medium text-gray-700">☀️ Morning Travel</label>
+                </div>
+                <div *ngIf="travelForm.get('includeMorning')?.value">
+                  <input type="number" formControlName="morningCost" placeholder="Morning cost"
+                         class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+
+              <!-- Evening Entry -->
+              <div class="glass-card p-4">
+                <div class="flex items-center mb-3">
+                  <input type="checkbox" formControlName="includeEvening" class="mr-2">
+                  <label class="text-sm font-medium text-gray-700">🌙 Evening Travel</label>
+                </div>
+                <div *ngIf="travelForm.get('includeEvening')?.value">
+                  <input type="number" formControlName="eveningCost" placeholder="Evening cost"
+                         class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" (click)="closeQuickEntryModal()"
+                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="!travelForm.valid || isSubmitting"
+                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
+                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Expense Form -->
+          <form *ngIf="selectedEntryType === 'expense'" [formGroup]="expenseForm" (ngSubmit)="submitExpenseEntry()">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" formControlName="date"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select formControlName="category"
+                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">Select category</option>
+                  <option *ngFor="let cat of expenseCategories" [value]="cat.value">
+                    {{ cat.icon }} {{ cat.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div *ngIf="expenseForm.get('category')?.value === 'OTHER'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Other Category Name</label>
+                <input type="text" formControlName="otherCategoryName" placeholder="Enter category name"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
+                <input type="number" formControlName="amount" placeholder="0.00"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <select formControlName="paymentMethod"
+                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">Select payment method</option>
+                  <option value="CASH">💵 Cash</option>
+                  <option value="UPI">📱 UPI</option>
+                  <option value="DEBIT_CARD">💳 Debit Card</option>
+                  <option value="CREDIT_CARD">💳 Credit Card</option>
+                  <option value="OTHER">🔄 Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                <textarea formControlName="description" rows="3" placeholder="Enter description"
+                          class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" (click)="closeQuickEntryModal()"
+                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="!expenseForm.valid || isSubmitting"
+                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
+                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </form>
+
+          <!-- Investment Form -->
+          <form *ngIf="selectedEntryType === 'investment'" [formGroup]="investmentForm" (ngSubmit)="submitInvestmentEntry()">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
+                <input type="date" formControlName="date"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <select formControlName="category"
+                        class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="">Select category</option>
+                  <option *ngFor="let cat of investmentCategories" [value]="cat.value">
+                    {{ cat.icon }} {{ cat.label }}
+                  </option>
+                </select>
+              </div>
+
+              <div *ngIf="investmentForm.get('category')?.value === 'OTHER'">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Other Category Name</label>
+                <input type="text" formControlName="otherCategoryName" placeholder="Enter category name"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
+                <input type="number" formControlName="amount" placeholder="0.00"
+                       class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
+                <textarea formControlName="description" rows="3" placeholder="Enter description"
+                          class="glass-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+              </div>
+
+              <div class="flex gap-3 justify-end">
+                <button type="button" (click)="closeQuickEntryModal()"
+                        class="glass-button px-6 py-2 rounded-lg text-sm font-medium text-gray-900">
+                  Cancel
+                </button>
+                <button type="submit" [disabled]="!investmentForm.valid || isSubmitting"
+                        class="glass-button-primary px-6 py-2 rounded-lg text-sm font-medium text-white">
+                  {{ isSubmitting ? 'Saving...' : 'Save' }}
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
     </div>
   `,
   styles: []
@@ -197,12 +413,83 @@ export class DashboardComponent implements OnInit {
   recentTransactions: RecentTransaction[] = [];
   isLoading = false;
 
+  // Quick Entry Modal
+  showQuickEntryModal = false;
+  selectedEntryType: 'travel' | 'expense' | 'investment' = 'travel';
+  isSubmitting = false;
+
+  // Forms
+  travelForm: FormGroup;
+  expenseForm: FormGroup;
+  investmentForm: FormGroup;
+
+  // Categories for dropdowns
+  expenseCategories = EXPENSE_CATEGORIES;
+  investmentCategories = Object.entries(INVESTMENT_CATEGORY_CONFIG).map(([value, config]) => ({
+    value,
+    label: config.label,
+    icon: config.icon
+  }));
+
   constructor(
     private userService: UserService,
     private authService: AuthService,
     private reportService: ReportService,
+    private travelService: TravelService,
+    private expenseService: ExpenseService,
+    private investmentService: InvestmentService,
+    private fb: FormBuilder,
     private router: Router
-  ) {}
+  ) {
+    // Initialize forms
+    this.travelForm = this.fb.group({
+      date: [this.getTodayDate(), Validators.required],
+      includeMorning: [false],
+      morningCost: [null],
+      includeEvening: [false],
+      eveningCost: [null]
+    });
+
+    this.expenseForm = this.fb.group({
+      date: [this.getTodayDate(), Validators.required],
+      category: ['', Validators.required],
+      otherCategoryName: [''],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
+      paymentMethod: ['', Validators.required],
+      description: ['']
+    });
+
+    this.investmentForm = this.fb.group({
+      date: [this.getTodayDate(), Validators.required],
+      category: ['', Validators.required],
+      otherCategoryName: [''],
+      amount: [null, [Validators.required, Validators.min(0.01)]],
+      description: ['']
+    });
+
+    // Watch for category changes to handle "OTHER" validation
+    this.expenseForm.get('category')?.valueChanges.subscribe(category => {
+      const otherCategoryControl = this.expenseForm.get('otherCategoryName');
+      if (category === 'OTHER') {
+        otherCategoryControl?.setValidators([Validators.required]);
+      } else {
+        otherCategoryControl?.clearValidators();
+        otherCategoryControl?.setValue('');
+      }
+      otherCategoryControl?.updateValueAndValidity();
+    });
+
+    this.investmentForm.get('category')?.valueChanges.subscribe(category => {
+      const otherCategoryControl = this.investmentForm.get('otherCategoryName');
+      if (category === 'OTHER') {
+        otherCategoryControl?.setValidators([Validators.required]);
+      } else {
+        otherCategoryControl?.clearValidators();
+        otherCategoryControl?.setValue('');
+      }
+      otherCategoryControl?.updateValueAndValidity();
+    });
+  }
 
   ngOnInit(): void {
     this.loadUserProfile();
@@ -290,5 +577,138 @@ export class DashboardComponent implements OnInit {
 
   navigateTo(route: string): void {
     this.router.navigate([route]);
+  }
+
+  // Quick Entry Modal Methods
+  openQuickEntryModal(): void {
+    this.showQuickEntryModal = true;
+    this.selectedEntryType = 'travel';
+    this.resetForms();
+  }
+
+  closeQuickEntryModal(): void {
+    this.showQuickEntryModal = false;
+    this.resetForms();
+  }
+
+  setEntryType(type: 'travel' | 'expense' | 'investment'): void {
+    this.selectedEntryType = type;
+    this.resetForms();
+  }
+
+  resetForms(): void {
+    this.travelForm.reset({
+      date: this.getTodayDate(),
+      includeMorning: false,
+      includeEvening: false
+    });
+    this.expenseForm.reset({
+      date: this.getTodayDate()
+    });
+    this.investmentForm.reset({
+      date: this.getTodayDate()
+    });
+    this.isSubmitting = false;
+  }
+
+  getTodayDate(): string {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  // Submit Methods
+  submitTravelEntry(): void {
+    if (!this.travelForm.valid) return;
+
+    const formValue = this.travelForm.value;
+    const travelRecords: any[] = [];
+
+    if (formValue.includeMorning && formValue.morningCost) {
+      travelRecords.push({
+        date: formValue.date,
+        timeOfDay: 'MORNING',
+        cost: formValue.morningCost
+      });
+    }
+
+    if (formValue.includeEvening && formValue.eveningCost) {
+      travelRecords.push({
+        date: formValue.date,
+        timeOfDay: 'EVENING',
+        cost: formValue.eveningCost
+      });
+    }
+
+    if (travelRecords.length === 0) {
+      alert('Please select at least one travel entry (Morning or Evening)');
+      return;
+    }
+
+    this.isSubmitting = true;
+
+    // Save each travel record
+    const saveRequests = travelRecords.map(record => 
+      this.travelService.createTravelRecord(record)
+    );
+
+    // Wait for all to complete
+    Promise.all(saveRequests.map(req => req.toPromise())).then(
+      () => {
+        alert('Travel record(s) saved successfully!');
+        this.closeQuickEntryModal();
+        this.loadSummary();
+        this.loadRecentTransactions();
+      },
+      (error) => {
+        console.error('Error saving travel records:', error);
+        alert('Error saving travel records. Please try again.');
+        this.isSubmitting = false;
+      }
+    );
+  }
+
+  submitExpenseEntry(): void {
+    if (!this.expenseForm.valid) return;
+
+    this.isSubmitting = true;
+    const expenseData = this.expenseForm.value;
+
+    this.expenseService.createExpense(expenseData).subscribe({
+      next: () => {
+        alert('Expense saved successfully!');
+        this.closeQuickEntryModal();
+        this.loadSummary();
+        this.loadRecentTransactions();
+      },
+      error: (error) => {
+        console.error('Error saving expense:', error);
+        alert('Error saving expense. Please try again.');
+        this.isSubmitting = false;
+      }
+    });
+  }
+
+  submitInvestmentEntry(): void {
+    if (!this.investmentForm.valid) return;
+
+    this.isSubmitting = true;
+    const investmentData = this.investmentForm.value;
+
+    this.investmentService.createInvestment(investmentData).subscribe({
+      next: () => {
+        alert('Investment saved successfully!');
+        this.closeQuickEntryModal();
+        this.loadSummary();
+        this.loadRecentTransactions();
+      },
+      error: (error) => {
+        console.error('Error saving investment:', error);
+        alert('Error saving investment. Please try again.');
+        this.isSubmitting = false;
+      }
+    });
   }
 }
