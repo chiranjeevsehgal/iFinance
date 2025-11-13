@@ -74,11 +74,11 @@ import { INVESTMENT_CATEGORY_CONFIG } from '../../../core/models/investment.mode
             </div>
 
             <!-- Morning Entry -->
-            <div class="bg-white/20 backdrop-blur-sm border border-white/40 rounded-lg p-4">
+            <div class="bg-white/30 backdrop-blur-sm border-2 border-gray-300/60 rounded-lg p-4">
               <div class="flex items-center mb-3">
                 <input type="checkbox" formControlName="includeMorning" 
-                       class="w-4 h-4 rounded border-white/60 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0">
-                <label class="ml-2 text-sm font-medium text-gray-700">☀️ Morning Travel</label>
+                       class="w-5 h-5 rounded border-2 border-gray-400 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer">
+                <label class="ml-2 text-sm font-medium text-gray-700 cursor-pointer">☀️ Morning Travel</label>
               </div>
               <div *ngIf="travelForm.get('includeMorning')?.value">
                 <input type="number" formControlName="morningCost" placeholder="Morning cost"
@@ -87,11 +87,11 @@ import { INVESTMENT_CATEGORY_CONFIG } from '../../../core/models/investment.mode
             </div>
 
             <!-- Evening Entry -->
-            <div class="bg-white/20 backdrop-blur-sm border border-white/40 rounded-lg p-4">
+            <div class="bg-white/30 backdrop-blur-sm border-2 border-gray-300/60 rounded-lg p-4">
               <div class="flex items-center mb-3">
                 <input type="checkbox" formControlName="includeEvening" 
-                       class="w-4 h-4 rounded border-white/60 text-indigo-600 focus:ring-indigo-500 focus:ring-offset-0">
-                <label class="ml-2 text-sm font-medium text-gray-700">🌙 Evening Travel</label>
+                       class="w-5 h-5 rounded border-2 border-gray-400 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0 cursor-pointer">
+                <label class="ml-2 text-sm font-medium text-gray-700 cursor-pointer">🌙 Evening Travel</label>
               </div>
               <div *ngIf="travelForm.get('includeEvening')?.value">
                 <input type="number" formControlName="eveningCost" placeholder="Evening cost"
