@@ -243,6 +243,14 @@ import { InvestmentCategory, INVESTMENT_CATEGORY_CONFIG } from '../../core/model
           <!-- Travel Form -->
           <form *ngIf="selectedEntryType === 'travel'" [formGroup]="travelForm" (ngSubmit)="submitTravelEntry()">
             <div class="space-y-4">
+              <!-- Info message when editing existing records -->
+              <div *ngIf="existingTravelRecords.morning || existingTravelRecords.evening" 
+                   class="glass-card p-3 bg-blue-100/30 border border-blue-300/50">
+                <p class="text-sm text-blue-800">
+                  ℹ️ Existing travel records found for this date. Edit and save to update.
+                </p>
+              </div>
+
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date</label>
                 <input type="date" formControlName="date" 
@@ -417,6 +425,7 @@ export class DashboardComponent implements OnInit {
   showQuickEntryModal = false;
   selectedEntryType: 'travel' | 'expense' | 'investment' = 'travel';
   isSubmitting = false;
+  existingTravelRecords: { morning?: any; evening?: any } = {};
 
   // Forms
   travelForm: FormGroup;
@@ -488,6 +497,13 @@ export class DashboardComponent implements OnInit {
         otherCategoryControl?.setValue('');
       }
       otherCategoryControl?.updateValueAndValidity();
+    });
+
+    // Watch for travel date changes to pre-populate existing data
+    this.travelForm.get('date')?.valueChanges.subscribe(date => {
+      if (date && this.showQuickEntryModal && this.selectedEntryType === 'travel') {
+        this.loadExistingTravelData(date);
+      }
     });
   }
 
@@ -584,6 +600,8 @@ export class DashboardComponent implements OnInit {
     this.showQuickEntryModal = true;
     this.selectedEntryType = 'travel';
     this.resetForms();
+    // Load existing travel data for today when opening modal
+    this.loadExistingTravelData(this.getTodayDate());
   }
 
   closeQuickEntryModal(): void {
@@ -594,6 +612,45 @@ export class DashboardComponent implements OnInit {
   setEntryType(type: 'travel' | 'expense' | 'investment'): void {
     this.selectedEntryType = type;
     this.resetForms();
+    // If switching to travel, load existing data
+    if (type === 'travel') {
+      this.loadExistingTravelData(this.travelForm.get('date')?.value || this.getTodayDate());
+    }
+  }
+
+  loadExistingTravelData(date: string): void {
+    this.travelService.getTravelRecordsByDate(date).subscribe({
+      next: (records) => {
+        // Find morning and evening records
+        const morningRecord = records.find(r => r.timeOfDay === 'MORNING');
+        const eveningRecord = records.find(r => r.timeOfDay === 'EVENING');
+
+        // Store existing records for update
+        this.existingTravelRecords = {
+          morning: morningRecord,
+          evening: eveningRecord
+        };
+
+        // Pre-populate form with existing data
+        this.travelForm.patchValue({
+          includeMorning: !!morningRecord,
+          morningCost: morningRecord?.cost || null,
+          includeEvening: !!eveningRecord,
+          eveningCost: eveningRecord?.cost || null
+        }, { emitEvent: false });
+      },
+      error: (error) => {
+        console.error('Error loading existing travel data:', error);
+        // Reset checkboxes and costs if error or no data
+        this.existingTravelRecords = {};
+        this.travelForm.patchValue({
+          includeMorning: false,
+          morningCost: null,
+          includeEvening: false,
+          eveningCost: null
+        }, { emitEvent: false });
+      }
+    });
   }
 
   resetForms(): void {
@@ -624,35 +681,72 @@ export class DashboardComponent implements OnInit {
     if (!this.travelForm.valid) return;
 
     const formValue = this.travelForm.value;
-    const travelRecords: any[] = [];
+    const saveRequests: any[] = [];
 
+    // Handle Morning Entry
     if (formValue.includeMorning && formValue.morningCost) {
-      travelRecords.push({
-        date: formValue.date,
-        timeOfDay: 'MORNING',
-        cost: formValue.morningCost
-      });
+      if (this.existingTravelRecords.morning) {
+        // Update existing morning record
+        const updatedRecord = {
+          ...this.existingTravelRecords.morning,
+          cost: formValue.morningCost,
+          date: formValue.date
+        };
+        saveRequests.push(
+          this.travelService.updateTravelRecord(this.existingTravelRecords.morning.id, updatedRecord)
+        );
+      } else {
+        // Create new morning record
+        saveRequests.push(
+          this.travelService.createTravelRecord({
+            date: formValue.date,
+            timeOfDay: TimeOfDay.MORNING,
+            cost: formValue.morningCost
+          })
+        );
+      }
+    } else if (this.existingTravelRecords.morning && !formValue.includeMorning) {
+      // Delete existing morning record if unchecked
+      saveRequests.push(
+        this.travelService.deleteTravelRecord(this.existingTravelRecords.morning.id)
+      );
     }
 
+    // Handle Evening Entry
     if (formValue.includeEvening && formValue.eveningCost) {
-      travelRecords.push({
-        date: formValue.date,
-        timeOfDay: 'EVENING',
-        cost: formValue.eveningCost
-      });
+      if (this.existingTravelRecords.evening) {
+        // Update existing evening record
+        const updatedRecord = {
+          ...this.existingTravelRecords.evening,
+          cost: formValue.eveningCost,
+          date: formValue.date
+        };
+        saveRequests.push(
+          this.travelService.updateTravelRecord(this.existingTravelRecords.evening.id, updatedRecord)
+        );
+      } else {
+        // Create new evening record
+        saveRequests.push(
+          this.travelService.createTravelRecord({
+            date: formValue.date,
+            timeOfDay: TimeOfDay.EVENING,
+            cost: formValue.eveningCost
+          })
+        );
+      }
+    } else if (this.existingTravelRecords.evening && !formValue.includeEvening) {
+      // Delete existing evening record if unchecked
+      saveRequests.push(
+        this.travelService.deleteTravelRecord(this.existingTravelRecords.evening.id)
+      );
     }
 
-    if (travelRecords.length === 0) {
-      alert('Please select at least one travel entry (Morning or Evening)');
+    if (saveRequests.length === 0) {
+      alert('Please select at least one travel entry (Morning or Evening) or make changes to existing records');
       return;
     }
 
     this.isSubmitting = true;
-
-    // Save each travel record
-    const saveRequests = travelRecords.map(record => 
-      this.travelService.createTravelRecord(record)
-    );
 
     // Wait for all to complete
     Promise.all(saveRequests.map(req => req.toPromise())).then(
