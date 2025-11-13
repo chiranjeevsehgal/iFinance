@@ -87,4 +87,9 @@ public interface ExpenseRepository extends MongoRepository<MiscExpense, String> 
      */
     @Query("{ 'userId': ?0, 'description': { $regex: ?1, $options: 'i' } }")
     List<MiscExpense> searchByDescription(String userId, String keyword);
+
+    /**
+     * Find top 10 recent expenses for a user
+     */
+    List<MiscExpense> findTop10ByUserIdOrderByDateDescCreatedAtDesc(String userId);
 }

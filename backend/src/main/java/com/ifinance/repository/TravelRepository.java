@@ -42,6 +42,7 @@ public interface TravelRepository extends MongoRepository<TravelRecord, String> 
      * Find travel records by user and date range
      */
     List<TravelRecord> findByUserIdAndDateBetween(String userId, LocalDate startDate, LocalDate endDate);
+    
 
     /**
      * Find travel records by user, date range, and time of day
@@ -63,4 +64,9 @@ public interface TravelRepository extends MongoRepository<TravelRecord, String> 
      * Count travel records for a user in a date range
      */
     long countByUserIdAndDateBetween(String userId, LocalDate startDate, LocalDate endDate);
+
+    /**
+     * Find top 10 recent travel records for a user
+     */
+    List<TravelRecord> findTop10ByUserIdOrderByDateDescCreatedAtDesc(String userId);
 }

@@ -75,4 +75,9 @@ public interface InvestmentRepository extends MongoRepository<Investment, String
      */
     @Query("{ 'userId': ?0, 'description': { $regex: ?1, $options: 'i' } }")
     List<Investment> searchByDescription(String userId, String keyword);
+
+    /**
+     * Find top 10 recent investments for a user
+     */
+    List<Investment> findTop10ByUserIdOrderByDateDescCreatedAtDesc(String userId);
 }
