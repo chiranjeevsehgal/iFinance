@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, OnChanges, SimpleChanges, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TravelService } from '../../../core/services/travel.service';
@@ -255,7 +255,7 @@ import { INVESTMENT_CATEGORY_CONFIG } from '../../../core/models/investment.mode
   `,
   styles: []
 })
-export class QuickAddModalComponent implements OnInit {
+export class QuickAddModalComponent implements OnInit, OnChanges {
   @Input() isOpen = false;
   @Output() closeModal = new EventEmitter<void>();
   @Output() entrySaved = new EventEmitter<void>();
@@ -341,9 +341,16 @@ export class QuickAddModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load existing travel data when modal opens
-    if (this.isOpen && this.selectedEntryType === 'travel') {
-      this.loadExistingTravelData(this.getTodayDate());
+    // Initial load is now handled by ngOnChanges
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Load existing travel data when modal opens (isOpen changes from false to true)
+    if (changes['isOpen'] && changes['isOpen'].currentValue === true) {
+      if (this.selectedEntryType === 'travel') {
+        const currentDate = this.travelForm.get('date')?.value || this.getTodayDate();
+        this.loadExistingTravelData(currentDate);
+      }
     }
   }
 
@@ -359,28 +366,39 @@ export class QuickAddModalComponent implements OnInit {
   loadExistingTravelData(date: string): void {
     this.travelService.getTravelRecordsByDate(date).subscribe({
       next: (records) => {
-        // Find morning and evening records
-        const morningRecord = records.find(r => r.timeOfDay === 'MORNING');
-        const eveningRecord = records.find(r => r.timeOfDay === 'EVENING');
+        // Handle both empty array response and records found
+        const morningRecord = records?.find(r => r.timeOfDay === 'MORNING');
+        const eveningRecord = records?.find(r => r.timeOfDay === 'EVENING');
 
-        // Store existing records for update
+        // Store existing records for update (undefined if no records)
         this.existingTravelRecords = {
           morning: morningRecord,
           evening: eveningRecord
         };
 
-        // Pre-populate form with existing data
-        this.travelForm.patchValue({
-          includeMorning: !!morningRecord,
-          morningCost: morningRecord?.cost || null,
-          includeEvening: !!eveningRecord,
-          eveningCost: eveningRecord?.cost || null
-        }, { emitEvent: false });
+        // If we have existing records, pre-populate the form
+        if (morningRecord || eveningRecord) {
+          this.travelForm.patchValue({
+            includeMorning: !!morningRecord,
+            morningCost: morningRecord?.cost || null,
+            includeEvening: !!eveningRecord,
+            eveningCost: eveningRecord?.cost || null
+          }, { emitEvent: false });
+        } else {
+          // No existing records - reset to empty state for new entry
+          this.travelForm.patchValue({
+            includeMorning: false,
+            morningCost: null,
+            includeEvening: false,
+            eveningCost: null
+          }, { emitEvent: false });
+        }
       },
       error: (error) => {
-        console.error('Error loading existing travel data:', error);
-        // Reset checkboxes and costs if error or no data
+        // Error loading data (network issue, etc.) - treat as no existing records
+        console.log('No existing travel data for date:', date, error);
         this.existingTravelRecords = {};
+        // Reset to empty state for new entry
         this.travelForm.patchValue({
           includeMorning: false,
           morningCost: null,
